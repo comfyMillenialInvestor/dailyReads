@@ -19,10 +19,19 @@ export function Footer() {
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-bold text-sm mb-4">About</h4>
+                    <h4 className="font-bold text-sm mb-4">Connect</h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">
-                        <li><Link href="/ueber" className="hover:underline">Mission & Sources</Link></li>
-                        <li><span className="text-xs">© 2026 Daily Reads</span></li>
+                        <li>
+                            <a href="https://x.com/dailyreads" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center">
+                                Twitter / X
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://linkedin.com/company/dailyreads" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                LinkedIn
+                            </a>
+                        </li>
+                        <li><span className="text-xs mt-2 block opacity-50">© 2026 Daily Reads</span></li>
                     </ul>
                 </div>
             </div>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { DailyReadsCarousel } from '@/components/DailyReadsCarousel';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Twitter } from 'lucide-react';
 
 export default function Home() {
   const [currentTheme, setCurrentTheme] = useState<string | null>(null);
@@ -67,14 +67,25 @@ export default function Home() {
           onSelectTheme={handleThemeSelect}
         />
 
-        <div className="text-center mt-12 p-6 bg-muted/30 rounded-xl border border-border/50">
-          <h3 className="font-bold mb-2">Build a Habit</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Bookmark this page and come back daily for new perspectives.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            (Press Ctrl+D to bookmark)
-          </p>
+        <div className="text-center mt-12 p-8 bg-muted/30 rounded-2xl border border-border/50 space-y-4">
+          <div className="space-y-2">
+            <h3 className="font-bold">Build a Habit</h3>
+            <p className="text-sm text-muted-foreground">
+              Bookmark this page and come back daily for new perspectives.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center gap-4 pt-2">
+            <Button variant="outline" size="sm" className="rounded-full px-6" asChild>
+              <a href="https://x.com/dailyreads" target="_blank" rel="noopener noreferrer">
+                <Twitter className="mr-2 h-4 w-4" />
+                Follow us on X
+              </a>
+            </Button>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              (Press Ctrl+D to bookmark)
+            </p>
+          </div>
         </div>
       </div>
     </div>

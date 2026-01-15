@@ -4,8 +4,6 @@ import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge'; // Warning: I didn't install Badge, need to remove or install. Used simple div for now.
-import { ScrollArea } from '@/components/ui/scroll-area'; // Need to install or use div overflow.
 import { Loader2 } from 'lucide-react';
 import type { IContent } from '@/lib/models/Content';
 
@@ -16,6 +14,9 @@ interface DailyReadsCarouselProps {
 }
 
 export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: DailyReadsCarouselProps) {
+    const [api, setApi] = React.useState<any>();
+    const [current, setCurrent] = React.useState(0);
+    const [count, setCount] = React.useState(0);
     const [items, setItems] = React.useState<IContent[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
@@ -64,11 +65,24 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
         fetchData();
     }, [theme, refreshKey]);
 
+    React.useEffect(() => {
+        if (!api) return;
+
+        setCount(api.scrollSnapList().length);
+        setCurrent(api.selectedScrollSnap() + 1);
+
+        api.on("select", () => {
+            setCurrent(api.selectedScrollSnap() + 1);
+        });
+    }, [api]);
+
     if (loading) {
         return (
-            <div className="flex justify-center items-center py-20">
+            <div className="flex flex-col justify-center items-center py-20 min-h-[600px] w-full max-w-4xl mx-auto">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">Loading specific texts...</span>
+                <span className="ml-2 mt-4 text-muted-foreground font-serif italic text-lg animate-pulse">
+                    Flipping through pages...
+                </span>
             </div>
         );
     }
@@ -87,10 +101,10 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
 
     return (
         <div className="w-full max-w-4xl mx-auto px-4">
-            <Carousel className="w-full">
+            <Carousel setApi={setApi} className="w-full">
                 <CarouselContent>
                     {items.map((item, index) => (
-                        <CarouselItem key={item._id as string + index}>
+                        <CarouselItem key={String(item._id) + index}>
                             <div className="p-1">
                                 <Card className="h-[600px] flex flex-col bg-card border-border shadow-lg">
                                     <CardHeader>
@@ -115,18 +129,28 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-hidden relative">
                                         {/* Using native overflow for now, could upgrade to ScrollArea */}
-                                        <div className="h-full overflow-y-auto pr-2 space-y-4 text-lg/relaxed font-serif text-foreground/90">
-                                            {item.content.split('\n').map((para, i) => (
-                                                para.trim() ? <p key={i} className="mb-4">{para}</p> : <br key={i} />
-                                            ))}
-
-                                            {/* Placeholder for AdSense inside content or bottom */}
-                                            {/* <!-- Google AdSense Placeholder --> */}
-                                            {/* <div className="w-full h-24 bg-muted/50 flex items-center justify-center text-xs text-muted-foreground my-8">AdSense Banner</div> */}
+                                        <div className="h-full overflow-y-auto pr-2 space-y-4 text-lg/relaxed font-serif text-foreground/90 whitespace-pre-wrap">
+                                            {item.content
+                                                .replace(/[ \t]+/g, ' ') // Collapse multiple spaces/tabs
+                                                .split('\n')
+                                                .map((para, i) => {
+                                                    const cleanPara = para.trim();
+                                                    return cleanPara ? (
+                                                        <p key={i} className="mb-4 text-justify">
+                                                            {cleanPara}
+                                                        </p>
+                                                    ) : null;
+                                                })
+                                                .filter(Boolean)
+                                            }
                                         </div>
                                     </CardContent>
-                                    <CardFooter className="border-t pt-4 text-xs text-muted-foreground text-center justify-center">
-                                        Swipe for next &rarr;
+                                    <CardFooter className="border-t pt-4 text-xs text-muted-foreground text-center justify-center min-h-[40px]">
+                                        {index < items.length - 1 ? (
+                                            <span className="animate-pulse">Swipe for next &rarr;</span>
+                                        ) : (
+                                            <span className="text-primary/40 font-medium italic">End of today's collection</span>
+                                        )}
                                     </CardFooter>
                                 </Card>
                             </div>

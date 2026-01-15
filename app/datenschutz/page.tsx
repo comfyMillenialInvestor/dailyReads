@@ -1,29 +1,78 @@
+import { ShieldCheck, Lock, EyeOff } from 'lucide-react';
+
 export default function Datenschutz() {
     return (
-        <div className="max-w-2xl mx-auto prose dark:prose-invert">
-            <h1>Datenschutzerklärung</h1>
+        <div className="max-w-3xl mx-auto py-12 space-y-16">
+            <section className="text-center space-y-4">
+                <div className="flex justify-center mb-2">
+                    <div className="p-3 bg-primary/5 rounded-full border border-primary/10 text-primary/60">
+                        <ShieldCheck className="h-8 w-8" />
+                    </div>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight">Privacy Policy</h1>
+                <p className="text-muted-foreground italic text-lg uppercase tracking-widest text-[10px]">Datenschutzerklärung</p>
+            </section>
 
-            <h3>1. Datenschutz auf einen Blick</h3>
-            <p><strong>Allgemeine Hinweise</strong></p>
-            <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen.</p>
+            <div className="prose prose-sm dark:prose-invert max-w-none space-y-12">
+                <section className="bg-muted/30 border border-border/40 p-8 rounded-3xl relative overflow-hidden group">
+                    <Lock className="absolute -right-4 -bottom-4 h-24 w-24 opacity-[0.03] group-hover:scale-110 transition-transform duration-700" />
+                    <h2 className="text-xl font-bold flex items-center space-x-2 mt-0">
+                        <span className="text-primary/50 font-serif italic mr-2">01.</span>
+                        Datenschutz auf einen Blick
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                        Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.
+                    </p>
+                </section>
 
-            <h3>2. Hosting</h3>
-            <p>Wir hosten die Inhalte unserer Website bei folgendem Anbieter:</p>
-            <p>[Name des Hosters, z.B. Vercel Inc.]</p>
+                <section className="space-y-6">
+                    <h2 className="text-xl font-bold flex items-center space-x-2">
+                        <span className="text-primary/50 font-serif italic mr-2">02.</span>
+                        Hosting & Infrastructure
+                    </h2>
+                    <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10">
+                        <p className="text-sm border-l-2 border-primary/20 pl-4">
+                            Wir hosten die Inhalte unserer Website bei folgendem Anbieter: <br />
+                            <span className="font-bold text-primary tracking-tight">[Name des Hosters, z.B. Vercel Inc.]</span>
+                        </p>
+                    </div>
+                </section>
 
-            <h3>3. Google AdSense (Platzhalter)</h3>
-            <p>Diese Website nutzt Google AdSense. Anbieter ist die Google Ireland Limited. Wenn Sie dies nicht wünschen, können Sie personalisierte Werbung in Ihren Google-Einstellungen deaktivieren.</p>
-            <div className="bg-muted p-4 rounded text-sm my-4">
-                Hinweis: Hier wird der genaue Text für Google AdSense eingefügt, sobald der Dienst aktiv ist und der Code integriert wurde.
+                <section className="space-y-6">
+                    <h2 className="text-xl font-bold flex items-center space-x-2">
+                        <span className="text-primary/50 font-serif italic mr-2">03.</span>
+                        Advertising & Analytics
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                        Diese Website nutzt Google AdSense. Anbieter ist die Google Ireland Limited. Wenn Sie dies nicht wünschen, können Sie personalisierte Werbung in Ihren Google-Einstellungen deaktivieren.
+                    </p>
+                    <div className="bg-yellow-500/5 p-6 rounded-2xl border border-yellow-500/20 flex space-x-4 items-start">
+                        <EyeOff className="h-5 w-5 text-yellow-600/60 mt-0.5 shrink-0" />
+                        <p className="text-xs text-yellow-900/60 dark:text-yellow-100/40 italic m-0">
+                            Hinweis: Hier wird der genaue Text für Google AdSense eingefügt, sobald der Dienst aktiv ist und der Code integriert wurde.
+                        </p>
+                    </div>
+                </section>
+
+                <section className="space-y-6">
+                    <h2 className="text-xl font-bold flex items-center space-x-2">
+                        <span className="text-primary/50 font-serif italic mr-2">04.</span>
+                        Communications
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                        Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular zwecks Bearbeitung der Anfrage bei uns gespeichert.
+                    </p>
+                </section>
+
+                <div className="pt-12 border-t border-border/50 text-center">
+                    <p className="text-xs text-muted-foreground italic mb-6">
+                        Ausführliche Informationen entnehmen Sie bitte unserer vollständigen Datenschutzerklärung.
+                    </p>
+                    <Button variant="outline" className="rounded-full px-8 text-[11px] font-bold uppercase tracking-widest border-primary/20 hover:bg-primary/5">
+                        Download PDF Policy
+                    </Button>
+                </div>
             </div>
-
-            <h3>4. Kontaktformular</h3>
-            <p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert.</p>
-
-            <h3>5. Analyse-Tools und Tools von Drittanbietern</h3>
-            <p>Beim Besuch dieser Website kann Ihr Surf-Verhalten statistisch ausgewertet werden (z.B. Google Analytics). Dies geschieht vor allem mit Cookies und mit sogenannten Analyseprogrammen.</p>
-
-            <p>Ausführliche Informationen entnehmen Sie bitte unserer <a href="#">vollständigen Datenschutzerklärung (PDF Download - Platzhalter)</a>.</p>
         </div>
     );
 }

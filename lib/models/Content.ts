@@ -57,6 +57,7 @@ const ContentSchema: Schema = new Schema(
 
 // Prevent overwrite model error in watch mode
 const Content: Model<IContent> =
-    mongoose.models.Content || mongoose.model<IContent>('Content', ContentSchema);
+    (mongoose.models && mongoose.models.Content) ||
+    mongoose.model<IContent>('Content', ContentSchema);
 
 export default Content;
