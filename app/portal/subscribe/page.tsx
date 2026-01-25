@@ -40,7 +40,7 @@ export default function SubscribePage() {
 
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-serif font-bold">Choose Your Commitment</h1>
-                <p className="text-muted-foreground">Support the ritual and unlock personal tracking for €2.50/month.</p>
+                <p className="text-muted-foreground italic">Unlock your personalized ritual history and support the curation for €2.50/month.</p>
             </div>
 
             <Card className="border-primary shadow-xl">
@@ -51,9 +51,10 @@ export default function SubscribePage() {
                 <CardContent className="pt-8 space-y-6">
                     <ul className="space-y-4">
                         {[
-                            "Daily ritual tracking",
-                            "Streak counting (current & best)",
-                            "30-day completion history",
+                            "Personalized ritual tracking",
+                            "Daily streak counter (current & best)",
+                            "Detailed 30-day completion history",
+                            "Reflection lounge access",
                             "Support for free literature access",
                             "Cancel anytime"
                         ].map((feature, idx) => (

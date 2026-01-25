@@ -1,6 +1,12 @@
+'use client';
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 export function Footer() {
+    const { data: session } = useSession();
+    const isPaid = (session?.user as any)?.isPaid || false;
+
     return (
         <footer className="border-t bg-muted/20 py-10 mt-20">
             <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
@@ -22,7 +28,12 @@ export function Footer() {
                     <h4 className="font-bold text-sm mb-4">Connect</h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                         <li>
-                            <a href="https://x.com/dailyreads" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center">
+                            <Link href="/portal/subscribe" className="hover:underline text-primary/80 font-medium">
+                                Ritual Membership {isPaid && "✓"}
+                            </Link>
+                        </li>
+                        <li>
+                            <a href="https://x.com/dailyreads" target="_blank" rel="noopener noreferrer" className="hover:underline">
                                 Twitter / X
                             </a>
                         </li>

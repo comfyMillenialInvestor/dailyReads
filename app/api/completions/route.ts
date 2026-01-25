@@ -6,23 +6,28 @@ import Completion from '@/lib/models/Completion';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
-    // In NextAuth v5, session.user.id might be directly accessible if strategy is JWT
-    // or through user object if strategy is database. Since I'm using adapter, 
-    // I should check both.
+    console.log(`[API] completions POST request. Session: ${session ? session.user?.email : 'NONE'}`);
+
     const userId = session?.user?.id;
+    const isPaid = (session?.user as any)?.isPaid || false;
+    const userEmail = session?.user?.email;
 
     if (!userId) {
+        console.warn(`[API] completions POST rejected: Unauthorized (No userId in session)`);
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         await dbConnect();
-        const user = await User.findById(userId);
-        if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-        if (!user.isPaid) {
+        // We still need the user document for streak logic, but we trust the session's isPaid status
+        // which includes our test@test.com override.
+        if (!isPaid) {
             return NextResponse.json({ error: 'Subscription required for tracking' }, { status: 403 });
         }
+
+        const user = await User.findById(userId);
+        if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
         // Get current date in CET (Central European Time)
         // This ensures the ritual follows the lunch break window logic

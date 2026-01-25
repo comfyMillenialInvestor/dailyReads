@@ -100,14 +100,16 @@ export default function PortalPage() {
             {!isPaid ? (
                 <Card className="border-primary/40 bg-primary/5 border-dashed">
                     <CardContent className="pt-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="space-y-2 text-center md:text-left">
-                            <h3 className="text-xl font-serif font-bold">Unlock Ritual Tracking</h3>
-                            <p className="text-muted-foreground max-w-md">
-                                Keep track of your daily consistency and support the curation of these three daily texts for €2.50/month.
+                        <div className="space-y-4 text-center md:text-left">
+                            <h3 className="text-2xl font-serif font-bold">Unlock Your Ritual History</h3>
+                            <p className="text-muted-foreground max-w-md leading-relaxed">
+                                Join our community to unlock personal tracking, maintain your reading streak, and <span className="font-semibold text-foreground">access your full history of completed readings</span>.
+                                <br /><br />
+                                Your journey of consistency starts here, with a dedicated dashboard to reflect on your daily moments of presence.
                             </p>
                         </div>
-                        <Button size="lg" className="rounded-full px-8 shadow-lg hover:shadow-xl transition-all" asChild>
-                            <Link href="/portal/subscribe">Enable Tracking</Link>
+                        <Button size="lg" className="rounded-full px-10 py-6 text-lg shadow-lg hover:shadow-xl transition-all" asChild>
+                            <Link href="/portal/subscribe">Enable History & Tracking</Link>
                         </Button>
                     </CardContent>
                 </Card>

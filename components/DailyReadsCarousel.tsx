@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import type { IContent } from '@/lib/models/Content';
+import confetti from 'canvas-confetti';
+import Link from 'next/link';
 
 interface DailyReadsCarouselProps {
     theme?: string | null;
@@ -15,14 +17,58 @@ interface DailyReadsCarouselProps {
 }
 
 export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: DailyReadsCarouselProps) {
-    const { data: session } = useSession();
+    const { data: session, update: updateSession } = useSession();
     const isPaid = (session?.user as any)?.isPaid || false;
+    const currentStreak = (session?.user as any)?.currentStreak || 0;
     const [api, setApi] = React.useState<any>();
     const [current, setCurrent] = React.useState(0);
     const [count, setCount] = React.useState(0);
     const [items, setItems] = React.useState<IContent[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [autoCompleted, setAutoCompleted] = React.useState(false);
+    const [completionError, setCompletionError] = React.useState<string | null>(null);
+
+    const triggerFireworks = React.useCallback(() => {
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval: any = setInterval(function () {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+    }, []);
+
+    const markAsCompleted = React.useCallback(async () => {
+        if (!isPaid || autoCompleted) return;
+        setCompletionError(null);
+        try {
+            const res = await fetch('/api/completions', { method: 'POST' });
+            const data = await res.json();
+            if (data.success || data.alreadyDone) {
+                setAutoCompleted(true);
+                triggerFireworks();
+                // Refresh session to get updated streak
+                await updateSession();
+                console.log(data.message || 'You showed up today.');
+            } else {
+                setCompletionError(data.error || 'Failed to record completion');
+            }
+        } catch (err) {
+            console.error('Auto-completion failed:', err);
+            setCompletionError('Connection error');
+        }
+    }, [isPaid, autoCompleted, triggerFireworks, updateSession]);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -35,28 +81,14 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                 if (theme) {
                     params.append('theme', theme);
                 } else if (refreshKey > 0) {
-                    // If refreshKey changed and no theme, it implies random refresh (or initial load)
-                    // But initial load (refreshKey=0) is also random.
-                    // The API logic: if 'random=true' is sent, it samples.
-                    // If we just want "Daily Reads" (fixed for date), we might need date logic.
-                    // But MVP requirements say: "Täglich 3... basierend auf Datum oder Random-Query"
-                    // And "Button Get 3 Random Texts" -> checks fetch with random.
-
-                    // If onRefreshRandom triggered, we assume we want random.
-                    // We can distinguish by a prop or just always random if explicit.
-                    // Let's assume refreshKey > 0 means explicit random fetch for now
                     params.append('random', 'true');
-                }
-
-                if (items.length === 0 && refreshKey === 0 && !theme) {
-                    // Initial load: maybe try to get daily?
-                    // For now default to random if no date logic in API yet.
                 }
 
                 const res = await fetch(`${url}?${params.toString()}`);
                 if (!res.ok) throw new Error('Failed to fetch texts');
                 const data = await res.json();
                 setItems(data);
+                setAutoCompleted(false); // Reset completion status on new items
             } catch (err) {
                 setError('Failed to load texts. Please try again.');
                 console.error(err);
@@ -75,9 +107,15 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
         setCurrent(api.selectedScrollSnap() + 1);
 
         api.on("select", () => {
-            setCurrent(api.selectedScrollSnap() + 1);
+            const newCurrent = api.selectedScrollSnap() + 1;
+            setCurrent(newCurrent);
+
+            // If they reached the last slide, auto-complete
+            if (newCurrent === count && count > 0) {
+                markAsCompleted();
+            }
         });
-    }, [api]);
+    }, [api, count, markAsCompleted]);
 
     if (loading) {
         return (
@@ -169,26 +207,41 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                             {index < items.length - 1 ? (
                                                 <span className="animate-pulse">Next: {items[index + 1].type.replace('_', ' ')} &rarr;</span>
                                             ) : (
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex flex-col items-end gap-2">
                                                     {isPaid ? (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="default"
-                                                            className="rounded-full px-6"
-                                                            onClick={async () => {
-                                                                try {
-                                                                    const res = await fetch('/api/completions', { method: 'POST' });
-                                                                    const data = await res.json();
-                                                                    if (data.success || data.alreadyDone) {
-                                                                        alert(data.message || 'You showed up today.');
-                                                                    }
-                                                                } catch (err) {
-                                                                    console.error(err);
-                                                                }
-                                                            }}
-                                                        >
-                                                            Mark Pause as Completed
-                                                        </Button>
+                                                        autoCompleted ? (
+                                                            <div className="flex flex-col items-end gap-3 animate-in fade-in zoom-in duration-700">
+                                                                <div className="flex items-center gap-2 text-primary font-serif italic text-base">
+                                                                    <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
+                                                                    "I showed up today."
+                                                                </div>
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="text-right">
+                                                                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Current Streak</div>
+                                                                        <div className="text-lg font-bold text-primary">{currentStreak} days</div>
+                                                                    </div>
+                                                                    <Link href="/portal">
+                                                                        <Button size="sm" variant="outline" className="rounded-full px-4 border-primary/30 hover:bg-primary/5">
+                                                                            View History &rarr;
+                                                                        </Button>
+                                                                    </Link>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="default"
+                                                                    className="rounded-full px-6"
+                                                                    onClick={markAsCompleted}
+                                                                >
+                                                                    Mark Pause as Completed
+                                                                </Button>
+                                                                {completionError && (
+                                                                    <span className="text-[10px] text-destructive animate-pulse">{completionError}</span>
+                                                                )}
+                                                            </>
+                                                        )
                                                     ) : (
                                                         <span className="italic text-primary/60">"You showed up today."</span>
                                                     )}
@@ -197,7 +250,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                         </div>
                                         {!isPaid && index === items.length - 1 && (
                                             <p className="text-[10px] text-muted-foreground/60 uppercase tracking-tighter">
-                                                * tracking and streaks available for ritual members
+                                                * consistency tracking and personal reading history available for ritual members
                                             </p>
                                         )}
                                     </CardFooter>
@@ -209,12 +262,6 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                 <CarouselPrevious />
                 <CarouselNext />
             </Carousel>
-
-            {/* Banner Ad Placeholder below carousel */}
-            <div className="mt-8 p-4 border border-dashed border-muted-foreground/30 bg-muted/20 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground">AdSense Banner Placeholder</p>
-                {/* <ins className="adsbygoogle" ... ></ins> */}
-            </div>
         </div>
     );
 }
