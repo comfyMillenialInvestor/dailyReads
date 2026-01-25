@@ -11,6 +11,23 @@ export async function GET(request: NextRequest) {
         const theme = searchParams.get('theme');
         const random = searchParams.get('random') === 'true';
 
+        // Ritual Logic: Check for scheduled content for today (CET)
+        const now = new Date();
+        const startOfDay = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(startOfDay);
+        endOfDay.setDate(endOfDay.getDate() + 1);
+
+        if (!random && !theme) {
+            const scheduled = await Content.find({
+                scheduledDate: { $gte: startOfDay, $lt: endOfDay }
+            }).sort({ type: 1 }); // Sort by type to keep order consistent
+
+            if (scheduled.length > 0) {
+                return NextResponse.json(scheduled);
+            }
+        }
+
         // We need 1 story, 1 poem, 1 essay
         const types: ContentType[] = ['short_story', 'poem', 'essay'];
         const results = [];

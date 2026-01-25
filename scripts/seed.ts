@@ -27,7 +27,8 @@ One prisoner is freed and dragged out of the cave. He sees the fire, and then th
 He returns to the cave to tell the others, but they do not believe him. They threaten to kill him if he tries to set them free.`,
         estimatedWords: 150,
         readTime: '1 min',
-        date: new Date(),
+        scheduledDate: new Date(),
+        pauseNumber: 1,
     },
     {
         type: 'poem',
@@ -59,7 +60,8 @@ Two roads diverged in a wood, and I—
 I took the one less traveled by,
 And that has made all the difference.`,
         readTime: '2 min',
-        date: new Date(),
+        scheduledDate: new Date(),
+        pauseNumber: 1,
     },
     {
         type: 'essay',
@@ -72,7 +74,8 @@ And that has made all the difference.`,
 Whoso would be a man must be a nonconformist. He who would gather immortal palms must not be hindered by the name of goodness, but must explore if it be goodness. Nothing is at last sacred but the integrity of your own mind. Absolve you to yourself, and you shall have the suffrage of the world.`,
         estimatedWords: 200,
         readTime: '2 min',
-        date: new Date(),
+        scheduledDate: new Date(),
+        pauseNumber: 1,
     },
     {
         type: 'short_story',
@@ -83,7 +86,8 @@ Whoso would be a man must be a nonconformist. He who would gather immortal palms
         content: `TRUE! --nervous --very, very dreadfully nervous I had been and am; but why will you say that I am mad? The disease had sharpened my senses --not destroyed --not dulled them. Above all was the sense of hearing acute. I heard all things in the heaven and in the earth. I heard many things in hell. How, then, am I mad? Hearken! and observe how healthily --how calmly I can tell you the whole story.`,
         estimatedWords: 100,
         readTime: '1 min',
-        date: new Date(),
+        scheduledDate: new Date(Date.now() + 86400000), // Tomorrow
+        pauseNumber: 2,
     },
 ];
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import type { IContent } from '@/lib/models/Content';
 
 interface DailyReadsCarouselProps {
@@ -14,6 +15,8 @@ interface DailyReadsCarouselProps {
 }
 
 export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: DailyReadsCarouselProps) {
+    const { data: session } = useSession();
+    const isPaid = (session?.user as any)?.isPaid || false;
     const [api, setApi] = React.useState<any>();
     const [current, setCurrent] = React.useState(0);
     const [count, setCount] = React.useState(0);
@@ -101,6 +104,20 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
 
     return (
         <div className="w-full max-w-4xl mx-auto px-4">
+            <div className="text-center mb-8 space-y-2">
+                <div className="inline-block px-4 py-1.5 bg-primary/5 rounded-full border border-primary/20 mb-2">
+                    <span className="text-sm font-medium text-primary tracking-wide uppercase">Today's Pause</span>
+                    {items[0]?.date && (
+                        <span className="ml-2 text-xs text-muted-foreground border-l pl-2">
+                            {new Date(items[0].date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
+                        </span>
+                    )}
+                </div>
+                <p className="text-lg font-serif italic text-muted-foreground">
+                    "Take 15–20 minutes. Read slowly. Return to work refreshed."
+                </p>
+            </div>
+
             <Carousel setApi={setApi} className="w-full">
                 <CarouselContent>
                     {items.map((item, index) => (
@@ -128,10 +145,9 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                         </div>
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-hidden relative">
-                                        {/* Using native overflow for now, could upgrade to ScrollArea */}
                                         <div className="h-full overflow-y-auto pr-2 space-y-4 text-lg/relaxed font-serif text-foreground/90 whitespace-pre-wrap">
                                             {item.content
-                                                .replace(/[ \t]+/g, ' ') // Collapse multiple spaces/tabs
+                                                .replace(/[ \t]+/g, ' ')
                                                 .split('\n')
                                                 .map((para, i) => {
                                                     const cleanPara = para.trim();
@@ -145,11 +161,44 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                             }
                                         </div>
                                     </CardContent>
-                                    <CardFooter className="border-t pt-4 text-xs text-muted-foreground text-center justify-center min-h-[40px]">
-                                        {index < items.length - 1 ? (
-                                            <span className="animate-pulse">Swipe for next &rarr;</span>
-                                        ) : (
-                                            <span className="text-primary/40 font-medium italic">End of today's collection</span>
+                                    <CardFooter className="flex flex-col border-t pt-4 text-xs text-muted-foreground text-center space-y-3">
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="font-medium">
+                                                {index + 1} of {items.length}
+                                            </span>
+                                            {index < items.length - 1 ? (
+                                                <span className="animate-pulse">Next: {items[index + 1].type.replace('_', ' ')} &rarr;</span>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    {isPaid ? (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="default"
+                                                            className="rounded-full px-6"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const res = await fetch('/api/completions', { method: 'POST' });
+                                                                    const data = await res.json();
+                                                                    if (data.success || data.alreadyDone) {
+                                                                        alert(data.message || 'You showed up today.');
+                                                                    }
+                                                                } catch (err) {
+                                                                    console.error(err);
+                                                                }
+                                                            }}
+                                                        >
+                                                            Mark Pause as Completed
+                                                        </Button>
+                                                    ) : (
+                                                        <span className="italic text-primary/60">"You showed up today."</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {!isPaid && index === items.length - 1 && (
+                                            <p className="text-[10px] text-muted-foreground/60 uppercase tracking-tighter">
+                                                * tracking and streaks available for ritual members
+                                            </p>
                                         )}
                                     </CardFooter>
                                 </Card>

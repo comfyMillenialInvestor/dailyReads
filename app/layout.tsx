@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
+import { Providers } from '@/components/Providers';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CookieBanner } from '@/components/CookieBanner';
@@ -20,19 +20,14 @@ export default function RootLayout({
       <body
         className="antialiased min-h-screen flex flex-col font-sans"
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <Providers>
           <Header />
           <main className="flex-1 container mx-auto px-4 py-8">
             {children}
           </main>
           <Footer />
           <CookieBanner />
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

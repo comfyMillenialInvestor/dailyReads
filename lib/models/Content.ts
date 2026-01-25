@@ -29,6 +29,8 @@ export interface IContent extends Document {
     estimatedWords?: number;
     readTime?: string;
     date?: Date; // For manually scheduled daily reads if needed
+    pauseNumber?: number;
+    scheduledDate?: Date;
     createdAt: Date;
 }
 
@@ -51,6 +53,8 @@ const ContentSchema: Schema = new Schema(
         estimatedWords: { type: Number },
         readTime: { type: String },
         date: { type: Date },
+        pauseNumber: { type: Number },
+        scheduledDate: { type: Date },
     },
     { timestamps: true }
 );

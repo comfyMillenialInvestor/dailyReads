@@ -35,11 +35,11 @@ export default function Home() {
     <div className="flex flex-col items-center space-y-10">
       <div className="text-center space-y-4 max-w-2xl mx-auto mt-4">
         <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight">
-          Your Daily Dose of Wisdom
+          Your Daily Creative Lunch Break Ritual
         </h1>
-        <p className="text-muted-foreground text-lg">
-          Discover a short story, a poem, and an essay every day.
-          Curated content to expand your mind in minutes.
+        <p className="text-muted-foreground text-lg italic">
+          A 20-minute creative pause for your lunch break.
+          Best read between 12:30 and 13:00 CET.
         </p>
       </div>
 
