@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-    apiKey: process.env.DEEPSEEK_API_KEY,
-    baseURL: 'https://api.deepseek.com/v1',
-});
-
 export async function POST(req: Request) {
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+
+    if (!apiKey) {
+        return NextResponse.json({ error: 'DeepSeek API key is missing. Please set DEEPSEEK_API_KEY in environment variables.' }, { status: 500 });
+    }
+
+    const openai = new OpenAI({
+        apiKey: apiKey,
+        baseURL: 'https://api.deepseek.com/v1',
+    });
+
     try {
         const { day, texts } = await req.json();
 
