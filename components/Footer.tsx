@@ -15,7 +15,14 @@ export function Footer() {
                     <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
                         Three curated short texts every day. Expand your horizon with a story, a poem, and an idea.
                     </p>
+                    <div className="mt-6 pt-6 border-t border-border/40">
+                        <p className="text-xs italic text-muted-foreground/70 leading-relaxed font-serif">
+                            "A delightful life is a popcorn machine in your head."
+                        </p>
+                        <p className="text-[10px] uppercase tracking-widest mt-2 opacity-50">— Ray Bradbury</p>
+                    </div>
                 </div>
+
                 <div>
                     <h4 className="font-bold text-sm mb-4">Legal</h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">

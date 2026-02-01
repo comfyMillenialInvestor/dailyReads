@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGO_URI = process.env.MONGO_URI;
+const DB_NAME = process.env.DB_NAME || 'dailyReads';
 
-if (!MONGODB_URI) {
+if (!MONGO_URI) {
     throw new Error(
-        'Please define the MONGODB_URI environment variable inside .env.local'
+        'Please define the MONGO_URI environment variable inside .env.local'
     );
 }
 
@@ -37,10 +38,11 @@ async function dbConnect() {
     if (!cached.promise) {
         const opts = {
             bufferCommands: false,
+            dbName: DB_NAME, // Explicitly set database name
         };
 
-        cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-            console.log('MongoDB connected successfully');
+        cached.promise = mongoose.connect(MONGO_URI!, opts).then((mongoose) => {
+            console.log(`MongoDB connected successfully to database: ${DB_NAME}`);
             return mongoose;
         });
     }
@@ -56,3 +58,4 @@ async function dbConnect() {
 }
 
 export default dbConnect;
+

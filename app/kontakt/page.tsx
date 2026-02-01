@@ -15,7 +15,7 @@ export default function Kontakt() {
                 </div>
                 <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight">Get in Touch</h1>
                 <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                    Whether you have a suggestion, a question, or just want to share a favorite poem, we'd love to hear from you.
+                    Whether you have a suggestion, a question, or just want to share a favorite poem, I'd love to hear from you.
                 </p>
             </section>
 
@@ -69,7 +69,7 @@ export default function Kontakt() {
                     <div className="space-y-4">
                         <h3 className="text-sm uppercase tracking-[0.2em] font-bold text-primary/60">Correspondence</h3>
                         <p className="text-muted-foreground leading-relaxed">
-                            Our team is scattered across the globe, but we all share a love for the written word. We typically respond within 1-2 business days.
+                            I am a solo bibliophile running this project out of a passion for great literature. I typically respond to messages within 1-2 business days.
                         </p>
                     </div>
 

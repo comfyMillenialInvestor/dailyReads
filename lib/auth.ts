@@ -8,7 +8,9 @@ import User from "./models/User"
 import bcrypt from "bcryptjs"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    adapter: MongoDBAdapter(clientPromise),
+    adapter: MongoDBAdapter(clientPromise, {
+        databaseName: process.env.DB_NAME || 'dailyReads',
+    }),
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID,

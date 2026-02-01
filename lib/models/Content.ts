@@ -34,6 +34,8 @@ export interface IContent extends Document {
     createdAt: Date;
 }
 
+const COLLECTION_NAME = process.env.COLLECTION_NAME || 'Content';
+
 const ContentSchema: Schema = new Schema(
     {
         type: {
@@ -56,12 +58,18 @@ const ContentSchema: Schema = new Schema(
         pauseNumber: { type: Number },
         scheduledDate: { type: Date },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+        collection: COLLECTION_NAME // Explicitly set collection name
+    }
 );
+
 
 // Prevent overwrite model error in watch mode
 const Content: Model<IContent> =
-    (mongoose.models && mongoose.models.Content) ||
-    mongoose.model<IContent>('Content', ContentSchema);
+    (mongoose.models && mongoose.models[COLLECTION_NAME]) ||
+    mongoose.model<IContent>(COLLECTION_NAME, ContentSchema);
 
 export default Content;
+
+

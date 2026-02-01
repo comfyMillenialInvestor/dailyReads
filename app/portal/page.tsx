@@ -128,15 +128,36 @@ export default function PortalPage() {
                             <div className="space-y-3">
                                 {completions.length > 0 ? (
                                     completions.map((comp, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                                                <span className="font-medium">
-                                                    {new Date(comp.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                                </span>
+                                        <details key={idx} className="group overflow-hidden rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-all duration-300">
+                                            <summary className="flex items-center justify-between p-4 cursor-pointer list-none outline-none">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                                                    <span className="font-medium">
+                                                        {new Date(comp.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-primary/60">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">View Readings</span>
+                                                    <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                                                </div>
+                                            </summary>
+                                            <div className="px-5 pb-5 pt-2 border-t border-border/20 bg-background/30 space-y-3 animate-in fade-in slide-in-from-top-2">
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {comp.contentIds && comp.contentIds.length > 0 ? (
+                                                        comp.contentIds.map((item: any, i: number) => (
+                                                            <div key={i} className="flex flex-col py-2 border-b border-border/10 last:border-0">
+                                                                <span className="text-xs font-bold text-primary/70 uppercase tracking-tighter mb-0.5">{item.type?.replace('_', ' ')}</span>
+                                                                <span className="font-serif italic text-foreground">{item.title}</span>
+                                                                <span className="text-[10px] text-muted-foreground opacity-70">by {item.author}</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="text-xs text-muted-foreground opacity-60">No specific records for this day.</p>
+                                                    )}
+                                                </div>
+                                                <p className="text-[10px] text-primary/40 font-serif italic text-right mt-2">"I showed up today."</p>
                                             </div>
-                                            <span className="text-xs text-primary/60 font-serif italic">"I showed up today."</span>
-                                        </div>
+                                        </details>
                                     ))
                                 ) : (
                                     <div className="text-center py-12 px-6 border border-dashed rounded-xl">

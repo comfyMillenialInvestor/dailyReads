@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import User from '@/lib/models/User';
 import Completion from '@/lib/models/Completion';
+import Content from '@/lib/models/Content'; // Ensure Content model is registered for population
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -10,14 +11,13 @@ export async function POST(request: NextRequest) {
 
     const userId = session?.user?.id;
     const isPaid = (session?.user as any)?.isPaid || false;
-    const userEmail = session?.user?.email;
 
     if (!userId) {
-        console.warn(`[API] completions POST rejected: Unauthorized (No userId in session)`);
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
+        const { contentIds } = await request.json().catch(() => ({ contentIds: [] }));
         await dbConnect();
 
         // We still need the user document for streak logic, but we trust the session's isPaid status
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
         await Completion.create({
             userId: user._id,
             date: cetDate,
+            contentIds: contentIds || [],
         });
 
         // Update user stats
@@ -101,6 +102,8 @@ export async function GET(request: NextRequest) {
         await dbConnect();
         // Get completions for the last 30 days
         const completions = await Completion.find({ userId })
+            .select('-userId') // Don't expose userId to the client
+            .populate('contentIds')
             .sort({ date: -1 })
             .limit(30);
 

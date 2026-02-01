@@ -4,6 +4,8 @@ import { Providers } from '@/components/Providers';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CookieBanner } from '@/components/CookieBanner';
+import { Analytics } from '@vercel/analytics/react';
+
 
 export const metadata: Metadata = {
   title: 'Daily Reads - Story, Poem, Essay',
@@ -27,7 +29,9 @@ export default function RootLayout({
           </main>
           <Footer />
           <CookieBanner />
+          <Analytics />
         </Providers>
+
       </body>
     </html>
   );

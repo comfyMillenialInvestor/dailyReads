@@ -9,6 +9,8 @@ import { useSession } from 'next-auth/react';
 import type { IContent } from '@/lib/models/Content';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+
 
 interface DailyReadsCarouselProps {
     theme?: string | null;
@@ -53,7 +55,12 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
         if (!isPaid || autoCompleted) return;
         setCompletionError(null);
         try {
-            const res = await fetch('/api/completions', { method: 'POST' });
+            const contentIds = items.map(item => item._id);
+            const res = await fetch('/api/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contentIds })
+            });
             const data = await res.json();
             if (data.success || data.alreadyDone) {
                 setAutoCompleted(true);
@@ -68,7 +75,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
             console.error('Auto-completion failed:', err);
             setCompletionError('Connection error');
         }
-    }, [isPaid, autoCompleted, triggerFireworks, updateSession]);
+    }, [isPaid, autoCompleted, triggerFireworks, updateSession, items]);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -84,11 +91,36 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                     params.append('random', 'true');
                 }
 
-                const res = await fetch(`${url}?${params.toString()}`);
+                // Add timestamp to prevent caching
+                params.append('t', Date.now().toString());
+
+                const res = await fetch(`${url}?${params.toString()}`, {
+                    cache: 'no-store'
+                });
                 if (!res.ok) throw new Error('Failed to fetch texts');
                 const data = await res.json();
                 setItems(data);
-                setAutoCompleted(false); // Reset completion status on new items
+
+                // Check if already completed today to prevent button from reappearing
+                if (isPaid) {
+                    const completionRes = await fetch('/api/completions');
+                    if (completionRes.ok) {
+                        const completions = await completionRes.json();
+                        // completions are sorted by date desc
+                        if (completions.length > 0) {
+                            const latest = new Date(completions[0].date);
+                            const now = new Date();
+                            // Normalize to same timezone for comparison
+                            const latestStr = latest.toLocaleDateString('en-GB');
+                            const todayStr = now.toLocaleDateString('en-GB');
+                            if (latestStr === todayStr) {
+                                setAutoCompleted(true);
+                                return;
+                            }
+                        }
+                    }
+                }
+                setAutoCompleted(false);
             } catch (err) {
                 setError('Failed to load texts. Please try again.');
                 console.error(err);
@@ -183,22 +215,25 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                         </div>
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-hidden relative">
-                                        <div className="h-full overflow-y-auto pr-2 space-y-4 text-lg/relaxed font-serif text-foreground/90 whitespace-pre-wrap">
-                                            {item.content
-                                                .replace(/[ \t]+/g, ' ')
-                                                .split('\n')
-                                                .map((para, i) => {
-                                                    const cleanPara = para.trim();
-                                                    return cleanPara ? (
-                                                        <p key={i} className="mb-4 text-justify">
-                                                            {cleanPara}
-                                                        </p>
-                                                    ) : null;
-                                                })
-                                                .filter(Boolean)
-                                            }
+                                        <div className="h-full overflow-y-auto pr-2 font-serif text-foreground/90 leading-relaxed scrollbar-thin scrollbar-thumb-muted">
+                                            <div className={`markdown-content ${item.type === 'poem' ? 'poetry-mode' : 'prose-mode'}`}>
+                                                <ReactMarkdown
+                                                    components={{
+                                                        p: ({ children }) => (
+                                                            <p className={`${item.type === 'poem' ? 'mb-2' : 'mb-6 text-justify'} text-lg leading-relaxed last:mb-0`}>
+                                                                {children}
+                                                            </p>
+                                                        ),
+                                                        em: ({ children }) => <em className="italic opacity-90">{children}</em>,
+                                                        strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
+                                                    }}
+                                                >
+                                                    {item.content}
+                                                </ReactMarkdown>
+                                            </div>
                                         </div>
                                     </CardContent>
+
                                     <CardFooter className="flex flex-col border-t pt-4 text-xs text-muted-foreground text-center space-y-3">
                                         <div className="flex items-center justify-between w-full">
                                             <span className="font-medium">

@@ -52,10 +52,18 @@ export default function Ueber() {
                             <span>The Collection</span>
                         </div>
                         <h2 className="text-3xl font-serif font-bold">Wisdom of the Past, Accessible Today</h2>
-                        <p className="text-muted-foreground leading-relaxed">
-                            We meticulously curate our library from the public domain, ensuring that the greatest works of human history remain alive in the digital age.
-                            From the psychological depth of <em>Chekhov</em> to the transcendentalist vision of <em>Emerson</em>, our sources are the pillars of world literature.
-                        </p>
+                        <div className="space-y-4 text-muted-foreground leading-relaxed">
+                            <p>
+                                I meticulously curate my library from the <strong>public domain</strong>, ensuring that the greatest works of human history remain alive in the digital age. I make no claim of ownership over these datasets; they are shared for the joy of discovery and the preservation of culture.
+                            </p>
+                            <p className="text-sm italic border-l-2 border-primary/20 pl-4">
+                                <strong>Note on Authorship:</strong> Due to the nature of historical archives, metadata is sometimes missing. In these cases, I use AI-assisted analysis to identify authors based on style and context. Such instances are explicitly marked as "assumed" within my collection.
+                            </p>
+                            <p>
+                                From the psychological depth of <em>Chekhov</em> to the transcendentalist vision of <em>Emerson</em>, the sources are the pillars of world literature.
+                            </p>
+                        </div>
+
                     </div>
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-primary/5 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
@@ -74,8 +82,8 @@ export default function Ueber() {
                 </div>
                 <h2 className="text-2xl font-bold">A Passion for Reading</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                    Daily Reads is a tribute to the written word. In an age of noise, we offer clarity.
-                    Created by bibliophiles for bibliophiles, we believe that five minutes of focused reading can be the most transformative part of your day.
+                    Daily Reads is a tribute to the written word. In an age of noise, I offer clarity.
+                    Created for bibliophiles by a bibliophile, I believe that five minutes of focused reading can be the most transformative part of your day.
                 </p>
                 <div className="pt-8 flex flex-col items-center space-y-6">
                     <div className="h-px w-24 bg-border/50" />

@@ -41,14 +41,14 @@ export default function Impressum() {
                     <div className="space-y-3 p-6 bg-primary/5 rounded-2xl border border-primary/10">
                         <h4 className="font-bold text-foreground">Haftung für Inhalte</h4>
                         <p>
-                            Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
+                            Als Diensteanbieter bin ich gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG bin ich als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
                         </p>
                     </div>
 
                     <div className="space-y-3 p-6 bg-primary/5 rounded-2xl border border-primary/10">
                         <h4 className="font-bold text-foreground">Haftung für Links</h4>
                         <p>
-                            Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen.
+                            Mein Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte ich keinen Einfluss habe. Deshalb kann ich für diese fremden Inhalte auch keine Gewähr übernehmen.
                         </p>
                     </div>
 
@@ -58,6 +58,32 @@ export default function Impressum() {
                             Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Vervielfältigung, Bearbeitung, Verbreitung bedürfen der schriftlichen Zustimmung.
                         </p>
                     </div>
+
+                    <div className="space-y-3 p-6 bg-primary/5 rounded-2xl border border-primary/10 border-dashed">
+                        <h4 className="font-bold text-foreground">Haftungsausschluss für Inhalte</h4>
+                        <p className="text-xs">
+                            Die auf dieser Webseite bereitgestellten literarischen Texte (Kurzgeschichten, Gedichte, Essays) stammen ausschließlich aus dem <strong>Public Domain (Gemeinfreiheit)</strong>. Ich erhebe keine urheberrechtlichen Ansprüche auf diese Originalwerke.
+                        </p>
+                        <p className="text-xs">
+                            Bitte beachten Sie, dass Metadaten (wie z.B. der Autor) bei historischen Werken teilweise unvollständig vorliegen können. In solchen Einzelfällen werden Autoren auf Basis des Inhalts und des Stils mithilfe von KI-gestützten Verfahren (DeepSeek) <strong>angenommen (assumed)</strong>. Ich übernehme keine Gewähr für die absolute Korrektheit dieser Zuordnungen.
+                        </p>
+                    </div>
+
+                    <div className="space-y-3 p-4 border border-border/40 rounded-xl text-[11px] opacity-80">
+                        <h4 className="font-bold text-foreground uppercase tracking-wider">EU-Streitschlichtung</h4>
+                        <p>
+                            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">https://ec.europa.eu/consumers/odr/</a>.
+                            Meine E-Mail-Adresse finden Sie oben im Impressum.
+                        </p>
+                    </div>
+
+                    <div className="space-y-3 p-4 border border-border/40 rounded-xl text-[11px] opacity-80">
+                        <h4 className="font-bold text-foreground uppercase tracking-wider">Verbraucherstreitbeilegung/ Universalschlichtungsstelle</h4>
+                        <p>
+                            Ich bin nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+                        </p>
+                    </div>
+
                 </section>
             </div>
 
