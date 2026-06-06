@@ -1,0 +1,8 @@
+./stripe.exe login
+./stripe.exe login --api-key sk_test_YOUR_SECRET_KEY
+
+./stripe.exe listen --forward-to localhost:3000/api/webhook/stripe
+
+
+
+> Done! The Stripe CLI is configured for DailyReads Sandbox with account id acct_1SydbI4TVpi8yCIS

@@ -1,14 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Send, Wand2, Check, X } from 'lucide-react';
+import { Loader2, Send, Wand2, Check, X, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function ChallengeAdmin() {
+    const { data: session } = useSession();
+    const currentStreak = (session?.user as any)?.currentStreak || 0;
+
     const [day, setDay] = useState('');
+    const [pattern, setPattern] = useState<'austere' | 'atmospheric' | 'resonance'>('austere');
     const [texts, setTexts] = useState([
         { title: '', author: '' },
         { title: '', author: '' },
@@ -18,6 +24,7 @@ export default function ChallengeAdmin() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [isPostExpanded, setIsPostExpanded] = useState(false);
 
     const handleTextChange = (index: number, field: 'title' | 'author', value: string) => {
         const newTexts = [...texts];
@@ -32,7 +39,7 @@ export default function ChallengeAdmin() {
             const res = await fetch('/api/admin/generate-post', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ day, texts })
+                body: JSON.stringify({ day, texts, pattern })
             });
             const data = await res.json();
             if (data.post) {
@@ -83,7 +90,25 @@ export default function ChallengeAdmin() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
-                        <Label htmlFor="day">Challenge Day</Label>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="day">Challenge Day</Label>
+                                {currentStreak > 0 && (
+                                    <span className="text-xs text-muted-foreground">
+                                        (Streak: <strong>{currentStreak} days</strong>)
+                                    </span>
+                                )}
+                            </div>
+                            {currentStreak > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => setDay(String(currentStreak))}
+                                    className="text-xs text-primary hover:underline font-medium"
+                                >
+                                    Use Streak Day
+                                </button>
+                            )}
+                        </div>
                         <Input
                             id="day"
                             type="number"
@@ -120,6 +145,31 @@ export default function ChallengeAdmin() {
                         ))}
                     </div>
 
+                    <div className="space-y-2">
+                        <Label>Draft Pattern</Label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {[
+                                { id: 'austere', name: 'Austere/Ritual', desc: 'Minimalist record keeping' },
+                                { id: 'atmospheric', name: 'Atmospheric', desc: 'Sensory observation' },
+                                { id: 'resonance', name: 'Resonance', desc: 'Intellectual connection' }
+                            ].map((p) => (
+                                <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => setPattern(p.id as any)}
+                                    className={`p-3 text-left rounded-xl border text-xs transition-all ${
+                                        pattern === p.id
+                                            ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/20'
+                                            : 'border-border/40 hover:border-border bg-background/50 text-muted-foreground'
+                                    }`}
+                                >
+                                    <div className="font-semibold">{p.name}</div>
+                                    <div className="text-[10px] opacity-70 mt-1 leading-snug">{p.desc}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <Button
                         onClick={generatePost}
                         className="w-full h-12 rounded-xl"
@@ -137,22 +187,59 @@ export default function ChallengeAdmin() {
 
             {generatedPost && (
                 <Card className="border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <CardHeader>
+                    <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center justify-between">
                             Draft Post
-                            <Button variant="ghost" size="sm" onClick={() => setGeneratedPost('')}>
-                                <X className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsPostExpanded(!isPostExpanded)}
+                                    title={isPostExpanded ? "Collapse" : "Expand"}
+                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                >
+                                    {isPostExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setGeneratedPost('')}
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="p-6 bg-background rounded-xl border border-border/50 font-serif text-lg leading-relaxed shadow-inner whitespace-pre-wrap">
-                            {generatedPost}
+                    <CardContent className="space-y-4">
+                        <div className="relative group">
+                            <Textarea
+                                value={generatedPost}
+                                onChange={(e) => setGeneratedPost(e.target.value)}
+                                className={`w-full p-6 bg-background rounded-xl border border-border/50 font-serif text-lg leading-relaxed shadow-inner transition-all duration-300 ${
+                                    isPostExpanded ? 'min-h-[400px]' : 'min-h-[160px]'
+                                } resize-y`}
+                                placeholder="Draft your post..."
+                            />
                         </div>
-                        <div className="flex gap-4">
+                        
+                        <div className="flex justify-between items-center px-1 text-xs">
+                            <span className="text-muted-foreground">
+                                You can edit this text directly before posting.
+                            </span>
+                            <span className={`font-semibold px-2 py-0.5 rounded-full ${
+                                generatedPost.length > 280 
+                                    ? 'bg-destructive/10 text-destructive animate-pulse' 
+                                    : 'bg-muted text-muted-foreground'
+                            }`}>
+                                {generatedPost.length} / 280 chars
+                            </span>
+                        </div>
+
+                        <div className="flex gap-4 pt-2">
                             <Button
                                 onClick={postToX}
-                                className="flex-1 h-12 rounded-xl bg-foreground text-background hover:bg-foreground/90"
+                                className="flex-1 h-12 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium transition-transform active:scale-[0.98]"
                                 disabled={isPosting}
                             >
                                 {isPosting ? (

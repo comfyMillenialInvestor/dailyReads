@@ -1,10 +1,16 @@
+'use client';
+
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageSquare, Send } from 'lucide-react';
+import { Mail, MessageSquare, Send, Maximize2, Minimize2 } from 'lucide-react';
 
 export default function Kontakt() {
+    const [message, setMessage] = useState('');
+    const [isMessageExpanded, setIsMessageExpanded] = useState(false);
+
     return (
         <div className="max-w-4xl mx-auto py-12 space-y-16">
             <section className="text-center space-y-4">
@@ -45,12 +51,42 @@ export default function Kontakt() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="message" className="text-xs uppercase tracking-wider font-semibold opacity-70">Message</Label>
-                                <Textarea
-                                    id="message"
-                                    placeholder="Your message..."
-                                    className="min-h-[180px] bg-background/50 border-border/40 focus:border-primary/50 transition-colors resize-none"
-                                />
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="message" className="text-xs uppercase tracking-wider font-semibold opacity-70">Message</Label>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setIsMessageExpanded(!isMessageExpanded)}
+                                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5"
+                                    >
+                                        {isMessageExpanded ? (
+                                            <>
+                                                <Minimize2 className="h-3 w-3" />
+                                                Collapse
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Maximize2 className="h-3 w-3" />
+                                                Expand
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                                <div className="relative">
+                                    <Textarea
+                                        id="message"
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                        placeholder="Your message..."
+                                        className={`w-full bg-background/50 border-border/40 focus:border-primary/50 transition-all duration-300 resize-y ${
+                                            isMessageExpanded ? 'min-h-[380px]' : 'min-h-[180px]'
+                                        }`}
+                                    />
+                                </div>
+                                <div className="text-right text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+                                    {message.length} characters
+                                </div>
                             </div>
 
                             <Button type="submit" className="w-full h-12 text-sm font-bold tracking-tight rounded-xl">

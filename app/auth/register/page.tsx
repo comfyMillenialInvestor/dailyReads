@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Check, X } from 'lucide-react';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -16,12 +16,21 @@ export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [errorDetails, setErrorDetails] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+
+    // Real-time password validation
+    const passwordChecks = useMemo(() => ({
+        length: password.length >= 8,
+        number: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    }), [password]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setErrorDetails([]);
 
         try {
             const res = await fetch('/api/auth/register', {
@@ -35,6 +44,9 @@ export default function RegisterPage() {
             } else {
                 const data = await res.json();
                 setError(data.error || 'Registration failed');
+                if (data.details) {
+                    setErrorDetails(data.details);
+                }
             }
         } catch (err) {
             setError('An error occurred during registration');
@@ -85,8 +97,36 @@ export default function RegisterPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                            {/* Password requirements indicator */}
+                            {password && (
+                                <div className="mt-2 space-y-1 text-xs">
+                                    <div className={`flex items-center gap-1 ${passwordChecks.length ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.length ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        At least 8 characters
+                                    </div>
+                                    <div className={`flex items-center gap-1 ${passwordChecks.number ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.number ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        At least 1 number
+                                    </div>
+                                    <div className={`flex items-center gap-1 ${passwordChecks.special ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                        {passwordChecks.special ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                        At least 1 special character
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        {error && <p className="text-sm text-destructive font-medium">{error}</p>}
+                        {error && (
+                            <div className="text-sm text-destructive font-medium">
+                                <p>{error}</p>
+                                {errorDetails.length > 0 && (
+                                    <ul className="mt-1 list-disc list-inside text-xs">
+                                        {errorDetails.map((detail, i) => (
+                                            <li key={i}>{detail}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
                         <Button type="submit" className="w-full" disabled={loading}>
                             <UserPlus className="mr-2 h-4 w-4" />
                             {loading ? 'Creating account...' : 'Create Account'}

@@ -1,16 +1,19 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, Calendar, CreditCard, ChevronRight, Loader2 } from 'lucide-react';
+import { Flame, Calendar, CreditCard, ChevronRight, Loader2, Download, Trash2, AlertTriangle, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PortalPage() {
     const { data: session, status } = useSession();
     const [completions, setCompletions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deleting, setDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [exporting, setExporting] = useState(false);
 
     const isPaid = (session?.user as any)?.isPaid || false;
 
@@ -27,6 +30,46 @@ export default function PortalPage() {
             setLoading(false);
         }
     }, [status, isPaid]);
+
+    const handleExportData = async () => {
+        setExporting(true);
+        try {
+            const response = await fetch('/api/user/export');
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `daily-reads-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+        } catch (error) {
+            console.error('Export failed:', error);
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        setDeleting(true);
+        try {
+            const response = await fetch('/api/user/delete', { method: 'DELETE' });
+            if (response.ok) {
+                await signOut({ callbackUrl: '/' });
+            } else {
+                alert('Failed to delete account. Please try again.');
+            }
+        } catch (error) {
+            console.error('Delete failed:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            setDeleting(false);
+            setShowDeleteConfirm(false);
+        }
+    };
 
     if (status === 'loading') {
         return (
@@ -172,6 +215,72 @@ export default function PortalPage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Account Settings Section */}
+            <Card className="border-border/50">
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium uppercase tracking-wider flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Account Settings
+                    </CardTitle>
+                    <CardDescription>Manage your data and account</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={handleExportData}
+                            disabled={exporting}
+                            className="flex items-center gap-2"
+                        >
+                            {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            Export My Data
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="flex items-center gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            Delete Account
+                        </Button>
+                    </div>
+
+                    {/* Delete Confirmation Dialog */}
+                    {showDeleteConfirm && (
+                        <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/5 space-y-3">
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="font-medium text-destructive">Permanently delete your account?</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        This will delete your account and all associated data, including your completion history and streaks. This action cannot be undone.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={deleting}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={handleDeleteAccount}
+                                    disabled={deleting}
+                                >
+                                    {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                    Yes, Delete My Account
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             <div className="flex flex-col items-center gap-4 pt-8 pb-12">
                 <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">

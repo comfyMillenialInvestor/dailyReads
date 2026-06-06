@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CreditCard, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+
+// ──────────────────────────────────────────────────────────
+// FEATURE FLAGS – flip to `true` to enable each provider button
+// ──────────────────────────────────────────────────────────
+const STRIPE_ENABLED = false;   // change to true to enable Stripe
+const PAYPAL_ENABLED = false;   // change to true to enable PayPal
+// ──────────────────────────────────────────────────────────
 
 export default function SubscribePage() {
     const [loading, setLoading] = useState<string | null>(null);
@@ -66,20 +73,32 @@ export default function SubscribePage() {
                     </ul>
 
                     <div className="space-y-3 pt-6">
+                        {/* ── Stripe Button ── */}
                         <Button
                             className="w-full h-12 text-lg rounded-full"
                             onClick={() => handleSubscribe('stripe')}
-                            disabled={!!loading}
+                            disabled={!STRIPE_ENABLED || !!loading}
+                            variant={STRIPE_ENABLED ? 'default' : 'outline'}
                         >
-                            {loading === 'stripe' ? 'Connecting to Stripe...' : 'Pay with Stripe'}
+                            {!STRIPE_ENABLED
+                                ? '💳 Stripe – Coming Soon'
+                                : loading === 'stripe'
+                                    ? 'Connecting to Stripe...'
+                                    : '💳 Pay with Stripe'}
                         </Button>
+
+                        {/* ── PayPal Button ── */}
                         <Button
-                            variant="outline"
-                            className="w-full h-12 text-lg rounded-full border-2"
+                            className="w-full h-12 text-lg rounded-full"
                             onClick={() => handleSubscribe('paypal')}
-                            disabled={!!loading}
+                            disabled={!PAYPAL_ENABLED || !!loading}
+                            variant={PAYPAL_ENABLED ? 'default' : 'outline'}
                         >
-                            {loading === 'paypal' ? 'Connecting...' : 'Pay with PayPal'}
+                            {!PAYPAL_ENABLED
+                                ? '🅿️ PayPal – Coming Soon'
+                                : loading === 'paypal'
+                                    ? 'Connecting to PayPal...'
+                                    : '🅿️ Pay with PayPal'}
                         </Button>
                     </div>
                 </CardContent>
