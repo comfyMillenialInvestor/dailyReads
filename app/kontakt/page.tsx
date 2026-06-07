@@ -115,10 +115,10 @@ export default function Kontakt() {
                             <span className="font-bold text-sm tracking-tight">Direct Email</span>
                         </div>
                         <a
-                            href="mailto:hello@dailyreads.io"
+                            href="mailto:support@dailyreads.eu"
                             className="block text-lg font-serif hover:text-primary transition-colors border-b border-border/50 pb-1"
                         >
-                            hello@dailyreads.io
+                            support@dailyreads.eu
                         </a>
                         <p className="text-xs text-muted-foreground italic">
                             For press inquiries, collaboration requests, or just to say hi.

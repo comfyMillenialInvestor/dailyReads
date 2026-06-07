@@ -4,8 +4,10 @@ import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, Calendar, CreditCard, ChevronRight, Loader2, Download, Trash2, AlertTriangle, Settings } from 'lucide-react';
+import { Flame, Calendar, CreditCard, ChevronRight, Loader2, Download, Trash2, AlertTriangle, Settings, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function PortalPage() {
     const { data: session, status } = useSession();
@@ -14,6 +16,15 @@ export default function PortalPage() {
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [exporting, setExporting] = useState(false);
+
+    const [canceling, setCanceling] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [changingPassword, setChangingPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
 
     const isPaid = (session?.user as any)?.isPaid || false;
 
@@ -71,6 +82,56 @@ export default function PortalPage() {
         }
     };
 
+    const handleCancelSubscription = async () => {
+        setCanceling(true);
+        try {
+            const response = await fetch('/api/user/subscription', { method: 'DELETE' });
+            if (response.ok) {
+                // We'll need to refresh the session or page to show the free tier status
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Failed to cancel subscription.');
+            }
+        } catch (error) {
+            console.error('Cancel failed:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            setCanceling(false);
+            setShowCancelConfirm(false);
+        }
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentPassword || !newPassword) return;
+        
+        setChangingPassword(true);
+        setPasswordError(null);
+        setPasswordSuccess(false);
+        
+        try {
+            const response = await fetch('/api/user/password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+            
+            if (response.ok) {
+                setPasswordSuccess(true);
+                setCurrentPassword('');
+                setNewPassword('');
+            } else {
+                const data = await response.json();
+                setPasswordError(data.error || 'Failed to change password');
+            }
+        } catch (error) {
+            setPasswordError('An error occurred. Please try again.');
+        } finally {
+            setChangingPassword(false);
+        }
+    };
+
     if (status === 'loading') {
         return (
             <div className="flex flex-col justify-center items-center py-20 min-h-[60vh]">
@@ -96,7 +157,8 @@ export default function PortalPage() {
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700">
             <div className="space-y-2 border-b pb-6">
                 <h1 className="text-3xl font-serif font-bold tracking-tight">Your Ritual Space</h1>
-                <p className="text-muted-foreground">Welcome back, {session?.user?.name || session?.user?.email}</p>
+                <p className="text-muted-foreground">Welcome back, {session?.user?.name || 'Ritualist'}</p>
+                <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -246,9 +308,90 @@ export default function PortalPage() {
                         </Button>
                     </div>
 
+                    {isPaid && (
+                        <div className="pt-4 border-t border-border/50">
+                            <h4 className="text-sm font-medium mb-3">Subscription</h4>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                {showCancelConfirm ? (
+                                    <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/5 space-y-3 w-full">
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                                            <div className="space-y-1">
+                                                <p className="font-medium text-destructive">Cancel your subscription?</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    You will lose access to your streak history at the end of your current billing period.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 justify-end">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowCancelConfirm(false)}
+                                                disabled={canceling}
+                                            >
+                                                Keep Subscription
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={handleCancelSubscription}
+                                                disabled={canceling}
+                                            >
+                                                {canceling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                                Yes, Cancel
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowCancelConfirm(true)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <XCircle className="h-4 w-4" />
+                                        Cancel Subscription
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="pt-4 border-t border-border/50">
+                        <h4 className="text-sm font-medium mb-3">Change Password</h4>
+                        <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
+                            <div className="space-y-1">
+                                <Label htmlFor="currentPassword">Current Password</Label>
+                                <Input
+                                    id="currentPassword"
+                                    type="password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="newPassword">New Password</Label>
+                                <Input
+                                    id="newPassword"
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+                            {passwordSuccess && <p className="text-sm text-green-600">Password changed successfully.</p>}
+                            <Button type="submit" disabled={changingPassword || !currentPassword || !newPassword}>
+                                {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                Update Password
+                            </Button>
+                        </form>
+                    </div>
+
                     {/* Delete Confirmation Dialog */}
                     {showDeleteConfirm && (
-                        <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/5 space-y-3">
+                        <div className="p-4 mt-4 rounded-lg border border-destructive/50 bg-destructive/5 space-y-3">
                             <div className="flex items-start gap-3">
                                 <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                                 <div className="space-y-1">

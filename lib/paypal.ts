@@ -231,3 +231,27 @@ export async function verifyPayPalWebhookSignature(
     const data = await response.json();
     return data.verification_status === 'SUCCESS';
 }
+
+export async function cancelPayPalSubscription(
+    accessToken: string,
+    subscriptionId: string
+): Promise<boolean> {
+    const response = await fetch(`${PAYPAL_API}/v1/billing/subscriptions/${subscriptionId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+            reason: 'User requested cancellation',
+        }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('PayPal cancel subscription failed:', response.statusText, errorText);
+        return false;
+    }
+
+    return true;
+}

@@ -57,12 +57,12 @@ export default function Datenschutz() {
                     <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 space-y-4">
                         <p className="text-sm font-bold text-foreground">Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:</p>
                         <div className="text-sm text-muted-foreground leading-relaxed">
-                            <p className="font-medium text-foreground">[Vorname Nachname]</p>
+                            <p className="font-medium text-foreground">Lennart Severin</p>
                             <p>[Straße Hausnummer]</p>
                             <p>[PLZ Ort], Deutschland</p>
                             <p className="mt-2">
                                 <Mail className="inline h-3 w-3 mr-1" />
-                                E-Mail: <a href="mailto:[E-Mail-Adresse]" className="text-primary hover:underline">[E-Mail-Adresse]</a>
+                                E-Mail: <a href="mailto:support@dailyreads.eu" className="text-primary hover:underline">support@dailyreads.eu</a>
                             </p>
                         </div>
                         <p className="text-xs text-muted-foreground mt-4 italic border-t pt-4 border-border/30">

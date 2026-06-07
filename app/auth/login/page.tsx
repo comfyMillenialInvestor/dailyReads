@@ -22,6 +22,12 @@ function LoginContent() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
+    // Reset password state
+    const [showResetForm, setShowResetForm] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetting, setResetting] = useState(false);
+    const [resetMessage, setResetMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -49,6 +55,29 @@ function LoginContent() {
 
     const handleGoogleLogin = () => {
         signIn('google', { callbackUrl });
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setResetting(true);
+        setResetMessage(null);
+        try {
+            const res = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: resetEmail }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setResetMessage({ type: 'success', text: 'If an account with that email exists, a new password has been sent.' });
+            } else {
+                setResetMessage({ type: 'error', text: data.error || 'Failed to reset password.' });
+            }
+        } catch (err) {
+            setResetMessage({ type: 'error', text: 'An error occurred.' });
+        } finally {
+            setResetting(false);
+        }
     };
 
     return (
@@ -81,33 +110,69 @@ function LoginContent() {
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="name@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </div>
-                        {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? 'Logging in...' : 'Sign In'}
-                        </Button>
-                    </form>
+                    {showResetForm ? (
+                        <form onSubmit={handleResetPassword} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="reset-email">Email</Label>
+                                <Input
+                                    id="reset-email"
+                                    type="email"
+                                    placeholder="name@example.com"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            {resetMessage && (
+                                <p className={`text-sm font-medium ${resetMessage.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+                                    {resetMessage.text}
+                                </p>
+                            )}
+                            <Button type="submit" className="w-full" disabled={resetting || !resetEmail}>
+                                {resetting ? 'Sending...' : 'Send New Password'}
+                            </Button>
+                            <Button type="button" variant="ghost" className="w-full" onClick={() => setShowResetForm(false)}>
+                                Back to Login
+                            </Button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="name@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="password">Password</Label>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowResetForm(true)}
+                                        className="text-xs text-primary hover:underline"
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                </div>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? 'Logging in...' : 'Sign In'}
+                            </Button>
+                        </form>
+                    )}
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-2">
                     <p className="text-sm text-muted-foreground">

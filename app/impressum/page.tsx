@@ -25,7 +25,7 @@ export default function Impressum() {
                             Diensteanbieter
                         </h3>
                         <div className="p-6 bg-muted/30 rounded-2xl border border-border/50 leading-relaxed">
-                            <p className="font-medium text-foreground">[Vorname Nachname]</p>
+                            <p className="font-medium text-foreground">Lennart Severin</p>
                             <p className="text-muted-foreground">[Straße Hausnummer]</p>
                             <p className="text-muted-foreground">[PLZ Ort]</p>
                             <p className="text-muted-foreground">Deutschland</p>
@@ -45,7 +45,7 @@ export default function Impressum() {
                             </p>
                             <p className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-muted-foreground" />
-                                <a href="mailto:[E-Mail-Adresse]" className="font-mono text-sm text-primary hover:underline">[E-Mail-Adresse]</a>
+                                <a href="mailto:support@dailyreads.eu" className="font-mono text-sm text-primary hover:underline">support@dailyreads.eu</a>
                             </p>
                         </div>
                     </div>
@@ -58,7 +58,7 @@ export default function Impressum() {
                         </h3>
                         <p className="text-xs text-muted-foreground italic px-1">gemäß § 18 Abs. 2 MStV:</p>
                         <div className="p-6 bg-muted/30 rounded-2xl border border-border/50 leading-relaxed">
-                            <p className="font-medium text-foreground">[Vorname Nachname]</p>
+                            <p className="font-medium text-foreground">Lennart Severin</p>
                             <p className="text-muted-foreground">[Straße Hausnummer]</p>
                             <p className="text-muted-foreground">[PLZ Ort]</p>
                         </div>

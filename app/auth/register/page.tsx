@@ -43,7 +43,11 @@ export default function RegisterPage() {
                 router.push('/auth/login?registered=true');
             } else {
                 const data = await res.json();
-                setError(data.error || 'Registration failed');
+                if (data.error === 'User already exists') {
+                    setError('You already have an account.');
+                } else {
+                    setError(data.error || 'Registration failed');
+                }
                 if (data.details) {
                     setErrorDetails(data.details);
                 }
