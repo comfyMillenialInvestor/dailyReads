@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { UserPlus, Check, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { t } = useLanguage();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -44,45 +46,45 @@ export default function RegisterPage() {
             } else {
                 const data = await res.json();
                 if (data.error === 'User already exists') {
-                    setError('You already have an account.');
+                    setError(t('register.alreadyExists'));
                 } else {
-                    setError(data.error || 'Registration failed');
+                    setError(data.error || t('register.failed'));
                 }
                 if (data.details) {
                     setErrorDetails(data.details);
                 }
             }
         } catch (err) {
-            setError('An error occurred during registration');
+            setError(t('register.error'));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-[70vh]">
+        <div className="flex justify-center items-center min-h-[70vh] px-4">
             <Card className="w-full max-w-md shadow-xl border-border">
                 <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-2xl font-serif font-bold">Join the Ritual</CardTitle>
+                    <CardTitle className="text-2xl font-serif font-bold">{t('register.title')}</CardTitle>
                     <CardDescription>
-                        Create an account to track your creative pauses
+                        {t('register.subtitle')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
+                            <Label htmlFor="name">{t('register.fullName')}</Label>
                             <Input
                                 id="name"
                                 type="text"
-                                placeholder="John Doe"
+                                placeholder={t('register.namePlaceholder')}
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{t('register.email')}</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -93,7 +95,7 @@ export default function RegisterPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">{t('register.password')}</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -106,15 +108,15 @@ export default function RegisterPage() {
                                 <div className="mt-2 space-y-1 text-xs">
                                     <div className={`flex items-center gap-1 ${passwordChecks.length ? 'text-green-600' : 'text-muted-foreground'}`}>
                                         {passwordChecks.length ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                                        At least 8 characters
+                                        {t('register.minChars')}
                                     </div>
                                     <div className={`flex items-center gap-1 ${passwordChecks.number ? 'text-green-600' : 'text-muted-foreground'}`}>
                                         {passwordChecks.number ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                                        At least 1 number
+                                        {t('register.minNumber')}
                                     </div>
                                     <div className={`flex items-center gap-1 ${passwordChecks.special ? 'text-green-600' : 'text-muted-foreground'}`}>
                                         {passwordChecks.special ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                                        At least 1 special character
+                                        {t('register.minSpecial')}
                                     </div>
                                 </div>
                             )}
@@ -133,18 +135,18 @@ export default function RegisterPage() {
                         )}
                         <Button type="submit" className="w-full" disabled={loading}>
                             <UserPlus className="mr-2 h-4 w-4" />
-                            {loading ? 'Creating account...' : 'Create Account'}
+                            {loading ? t('register.creating') : t('register.createAccount')}
                         </Button>
                     </form>
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-2 text-center text-xs text-muted-foreground italic">
                     <p>
-                        "Consistency is the essence of ritual."
+                        {t('register.quote')}
                     </p>
                     <p className="text-sm text-muted-foreground not-italic mt-2">
-                        Already have an account?{' '}
+                        {t('register.hasAccount')}{' '}
                         <Link href="/auth/login" className="text-primary hover:underline">
-                            Sign In
+                            {t('register.signIn')}
                         </Link>
                     </p>
                 </CardFooter>

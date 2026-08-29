@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { VALID_THEMES } from '@/lib/models/Content';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ThemeSelectorProps {
     currentTheme: string | null;
@@ -9,6 +10,8 @@ interface ThemeSelectorProps {
 }
 
 export function ThemeSelector({ currentTheme, onSelectTheme }: ThemeSelectorProps) {
+    const { t } = useLanguage();
+
     return (
         <div className="flex flex-wrap gap-2 justify-center my-6">
             <Button
@@ -16,7 +19,7 @@ export function ThemeSelector({ currentTheme, onSelectTheme }: ThemeSelectorProp
                 onClick={() => onSelectTheme(null)}
                 className="capitalize"
             >
-                All / Random
+                {t('theme.allRandom')}
             </Button>
             {VALID_THEMES.map((theme) => (
                 <Button

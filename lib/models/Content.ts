@@ -32,6 +32,12 @@ export interface IContent extends Document {
     pauseNumber?: number;
     scheduledDate?: Date;
     createdAt: Date;
+    title_de?: string;
+    content_de?: string;
+    summary_de?: string;
+    title_en?: string;
+    content_en?: string;
+    summary_en?: string;
 }
 
 const COLLECTION_NAME = process.env.COLLECTION_NAME || 'Content';
@@ -57,6 +63,12 @@ const ContentSchema: Schema = new Schema(
         date: { type: Date },
         pauseNumber: { type: Number },
         scheduledDate: { type: Date },
+        title_de: { type: String },
+        content_de: { type: String },
+        summary_de: { type: String },
+        title_en: { type: String },
+        content_en: { type: String },
+        summary_en: { type: String },
     },
     {
         timestamps: true,

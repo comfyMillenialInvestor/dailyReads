@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { LogIn, Mail } from 'lucide-react';
+import { LogIn } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 import { Suspense } from 'react';
 
@@ -16,6 +17,7 @@ function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const { t } = useLanguage();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -42,12 +44,12 @@ function LoginContent() {
             });
 
             if (result?.error) {
-                setError('Invalid email or password');
+                setError(t('login.invalidCredentials'));
             } else {
                 router.push(callbackUrl);
             }
         } catch (err) {
-            setError('An error occurred during login');
+            setError(t('login.error'));
         } finally {
             setLoading(false);
         }
@@ -69,24 +71,24 @@ function LoginContent() {
             });
             const data = await res.json();
             if (res.ok) {
-                setResetMessage({ type: 'success', text: 'If an account with that email exists, a new password has been sent.' });
+                setResetMessage({ type: 'success', text: t('login.resetSuccess') });
             } else {
-                setResetMessage({ type: 'error', text: data.error || 'Failed to reset password.' });
+                setResetMessage({ type: 'error', text: data.error || t('login.resetError') });
             }
         } catch (err) {
-            setResetMessage({ type: 'error', text: 'An error occurred.' });
+            setResetMessage({ type: 'error', text: t('login.resetGenericError') });
         } finally {
             setResetting(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-[70vh]">
+        <div className="flex justify-center items-center min-h-[70vh] px-4">
             <Card className="w-full max-w-md shadow-xl border-border">
                 <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-2xl font-serif font-bold">Welcome Back</CardTitle>
+                    <CardTitle className="text-2xl font-serif font-bold">{t('login.title')}</CardTitle>
                     <CardDescription>
-                        Log in to continue your ritual
+                        {t('login.subtitle')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -97,7 +99,7 @@ function LoginContent() {
                             onClick={handleGoogleLogin}
                         >
                             <LogIn className="mr-2 h-4 w-4" />
-                            Continue with Google
+                            {t('login.google')}
                         </Button>
                     </div>
 
@@ -106,14 +108,14 @@ function LoginContent() {
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+                            <span className="bg-card px-2 text-muted-foreground">{t('login.orEmail')}</span>
                         </div>
                     </div>
 
                     {showResetForm ? (
                         <form onSubmit={handleResetPassword} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="reset-email">Email</Label>
+                                <Label htmlFor="reset-email">{t('login.email')}</Label>
                                 <Input
                                     id="reset-email"
                                     type="email"
@@ -129,16 +131,16 @@ function LoginContent() {
                                 </p>
                             )}
                             <Button type="submit" className="w-full" disabled={resetting || !resetEmail}>
-                                {resetting ? 'Sending...' : 'Send New Password'}
+                                {resetting ? t('login.resetSending') : t('login.resetSendPassword')}
                             </Button>
                             <Button type="button" variant="ghost" className="w-full" onClick={() => setShowResetForm(false)}>
-                                Back to Login
+                                {t('login.backToLogin')}
                             </Button>
                         </form>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{t('login.email')}</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -150,13 +152,13 @@ function LoginContent() {
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">{t('login.password')}</Label>
                                     <button 
                                         type="button" 
                                         onClick={() => setShowResetForm(true)}
                                         className="text-xs text-primary hover:underline"
                                     >
-                                        Forgot Password?
+                                        {t('login.forgotPassword')}
                                     </button>
                                 </div>
                                 <Input
@@ -169,16 +171,16 @@ function LoginContent() {
                             </div>
                             {error && <p className="text-sm text-destructive font-medium">{error}</p>}
                             <Button type="submit" className="w-full" disabled={loading}>
-                                {loading ? 'Logging in...' : 'Sign In'}
+                                {loading ? t('login.loggingIn') : t('login.signIn')}
                             </Button>
                         </form>
                     )}
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-2">
                     <p className="text-sm text-muted-foreground">
-                        Don't have an account?{' '}
+                        {t('login.noAccount')}{' '}
                         <Link href="/auth/register" className="text-primary hover:underline">
-                            Join the ritual
+                            {t('login.joinRitual')}
                         </Link>
                     </p>
                 </CardFooter>

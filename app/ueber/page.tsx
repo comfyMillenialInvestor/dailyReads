@@ -1,8 +1,13 @@
+'use client';
+
 import { BookOpen, PenTool, Quote, Library, Heart, Sparkles, Linkedin, Twitter } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function Ueber() {
+    const { t } = useLanguage();
+
     return (
-        <div className="max-w-4xl mx-auto space-y-16 py-8">
+        <div className="max-w-4xl mx-auto space-y-12 md:space-y-16 py-8 px-2">
             {/* Hero Section */}
             <section className="text-center space-y-6">
                 <div className="flex justify-center mb-4">
@@ -10,66 +15,60 @@ export default function Ueber() {
                         <Library className="h-8 w-8 text-primary/80" />
                     </div>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-tight">
-                    Preserving the Essence of Literature
+                <h1 className="text-3xl md:text-6xl font-serif font-bold tracking-tight">
+                    {t('about.hero.title')}
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
-                    A daily sanctuary for the thoughtful reader. Finite, curated, and timeless.
+                <p className="text-lg md:text-2xl text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
+                    {t('about.hero.subtitle')}
                 </p>
             </section>
 
             {/* Concept Grid */}
-            <section className="grid md:grid-cols-3 gap-6">
-                <div className="group p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
+            <section className="grid md:grid-cols-3 gap-4 md:gap-6">
+                <div className="group p-6 md:p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
                     <PenTool className="h-6 w-6 mb-4 text-primary/60 group-hover:text-primary transition-colors" />
-                    <h3 className="text-xl font-bold mb-3">Short Story</h3>
+                    <h3 className="text-lg md:text-xl font-bold mb-3">{t('about.shortStory.title')}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        A complete narrative arc captured in minutes. Designed to ignite your imagination and transport you to other worlds.
+                        {t('about.shortStory.desc')}
                     </p>
                 </div>
-                <div className="group p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
+                <div className="group p-6 md:p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
                     <Quote className="h-6 w-6 mb-4 text-primary/60 group-hover:text-primary transition-colors" />
-                    <h3 className="text-xl font-bold mb-3">Poetry</h3>
+                    <h3 className="text-lg md:text-xl font-bold mb-3">{t('about.poetry.title')}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        The distillation of human experience. Rhythms and rhymes that touch the soul and linger long after reading.
+                        {t('about.poetry.desc')}
                     </p>
                 </div>
-                <div className="group p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
+                <div className="group p-6 md:p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
                     <BookOpen className="h-6 w-6 mb-4 text-primary/60 group-hover:text-primary transition-colors" />
-                    <h3 className="text-xl font-bold mb-3">Essay</h3>
+                    <h3 className="text-lg md:text-xl font-bold mb-3">{t('about.essay.title')}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        Thought-provoking arguments and reflections. Challenges your perspective and deepens your understanding of the world.
+                        {t('about.essay.desc')}
                     </p>
                 </div>
             </section>
 
             {/* Sources & Philosophy */}
-            <section className="bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
-                <div className="grid md:grid-cols-2 gap-12 items-center">
+            <section className="bg-primary/5 rounded-3xl p-6 md:p-12 border border-primary/10">
+                <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
                     <div className="space-y-6">
                         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary uppercase tracking-wider">
                             <Sparkles className="h-3 w-3" />
-                            <span>The Collection</span>
+                            <span>{t('about.collection')}</span>
                         </div>
-                        <h2 className="text-3xl font-serif font-bold">Wisdom of the Past, Accessible Today</h2>
-                        <div className="space-y-4 text-muted-foreground leading-relaxed">
-                            <p>
-                                I meticulously curate my library from the <strong>public domain</strong>, ensuring that the greatest works of human history remain alive in the digital age. I make no claim of ownership over these datasets; they are shared for the joy of discovery and the preservation of culture.
-                            </p>
-                            <p className="text-sm italic border-l-2 border-primary/20 pl-4">
-                                <strong>Note on Authorship:</strong> Due to the nature of historical archives, metadata is sometimes missing. In these cases, I use AI-assisted analysis to identify authors based on style and context. Such instances are explicitly marked as "assumed" within my collection.
-                            </p>
-                            <p>
-                                From the psychological depth of <em>Chekhov</em> to the transcendentalist vision of <em>Emerson</em>, the sources are the pillars of world literature.
-                            </p>
+                        <h2 className="text-2xl md:text-3xl font-serif font-bold">{t('about.collection.title')}</h2>
+                        <div className="space-y-4 text-muted-foreground leading-relaxed text-sm md:text-base">
+                            <p dangerouslySetInnerHTML={{ __html: t('about.collection.p1') }} />
+                            <p className="text-xs md:text-sm italic border-l-2 border-primary/20 pl-4" dangerouslySetInnerHTML={{ __html: t('about.collection.note') }} />
+                            <p dangerouslySetInnerHTML={{ __html: t('about.collection.p2') }} />
                         </div>
 
                     </div>
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-primary/5 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                        <div className="relative p-8 bg-card rounded-2xl border border-border/50 shadow-sm italic text-lg leading-relaxed text-center">
-                            "Literature is the most agreeable way of ignoring life."
-                            <div className="mt-4 not-italic font-bold text-sm text-primary/60">— Fernando Pessoa</div>
+                        <div className="relative p-6 md:p-8 bg-card rounded-2xl border border-border/50 shadow-sm italic text-base md:text-lg leading-relaxed text-center">
+                            {t('about.collection.quote')}
+                            <div className="mt-4 not-italic font-bold text-sm text-primary/60">{t('about.collection.quoteAuthor')}</div>
                         </div>
                     </div>
                 </div>
@@ -80,10 +79,9 @@ export default function Ueber() {
                 <div className="inline-block p-2 bg-muted/50 rounded-full border border-border/50 mb-2">
                     <Heart className="h-5 w-5 text-destructive/70" />
                 </div>
-                <h2 className="text-2xl font-bold">A Passion for Reading</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                    Daily Reads is a tribute to the written word. In an age of noise, I offer clarity.
-                    Created for bibliophiles by a bibliophile, I believe that five minutes of focused reading can be the most transformative part of your day.
+                <h2 className="text-xl md:text-2xl font-bold">{t('about.passion.title')}</h2>
+                <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
+                    {t('about.passion.desc')}
                 </p>
                 <div className="pt-8 flex flex-col items-center space-y-6">
                     <div className="h-px w-24 bg-border/50" />
@@ -96,8 +94,8 @@ export default function Ueber() {
                         </a>
                     </div>
                     <div className="text-center">
-                        <p className="text-sm font-medium tracking-tight uppercase">Built for the joy of discovery</p>
-                        <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest">Est. 2026 • Germany</p>
+                        <p className="text-sm font-medium tracking-tight uppercase">{t('about.builtFor')}</p>
+                        <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest">{t('about.est')}</p>
                     </div>
                 </div>
             </section>

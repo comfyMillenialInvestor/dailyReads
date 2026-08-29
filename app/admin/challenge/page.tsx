@@ -8,10 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Send, Wand2, Check, X, Maximize2, Minimize2 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function ChallengeAdmin() {
     const { data: session } = useSession();
     const currentStreak = (session?.user as any)?.currentStreak || 0;
+    const { t } = useLanguage();
 
     const [day, setDay] = useState('');
     const [pattern, setPattern] = useState<'austere' | 'atmospheric' | 'resonance'>('austere');
@@ -76,26 +78,32 @@ export default function ChallengeAdmin() {
         }
     };
 
+    const patternOptions = [
+        { id: 'austere', name: t('challenge.austere'), desc: t('challenge.austerDesc') },
+        { id: 'atmospheric', name: t('challenge.atmospheric'), desc: t('challenge.atmosDesc') },
+        { id: 'resonance', name: t('challenge.resonance'), desc: t('challenge.resonDesc') }
+    ];
+
     return (
-        <div className="max-w-2xl mx-auto py-10 space-y-8">
+        <div className="max-w-2xl mx-auto py-6 md:py-10 space-y-6 md:space-y-8 px-2">
             <div className="space-y-2">
-                <h1 className="text-3xl font-serif font-bold tracking-tight">Ray Bradbury Challenge</h1>
-                <p className="text-muted-foreground">Log your daily progress and share it on X.</p>
+                <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">{t('challenge.title')}</h1>
+                <p className="text-muted-foreground text-sm md:text-base">{t('challenge.subtitle')}</p>
             </div>
 
             <Card className="border-border/50 bg-muted/30">
                 <CardHeader>
-                    <CardTitle className="text-lg">Daily Log</CardTitle>
-                    <CardDescription>Enter the day number and the pieces you've read today.</CardDescription>
+                    <CardTitle className="text-lg">{t('challenge.dailyLog')}</CardTitle>
+                    <CardDescription>{t('challenge.dailyLogDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                                <Label htmlFor="day">Challenge Day</Label>
+                                <Label htmlFor="day">{t('challenge.day')}</Label>
                                 {currentStreak > 0 && (
                                     <span className="text-xs text-muted-foreground">
-                                        (Streak: <strong>{currentStreak} days</strong>)
+                                        ({t('challenge.streak')}: <strong>{currentStreak} {t('challenge.streakDays')}</strong>)
                                     </span>
                                 )}
                             </div>
@@ -105,7 +113,7 @@ export default function ChallengeAdmin() {
                                     onClick={() => setDay(String(currentStreak))}
                                     className="text-xs text-primary hover:underline font-medium"
                                 >
-                                    Use Streak Day
+                                    {t('challenge.useStreakDay')}
                                 </button>
                             )}
                         </div>
@@ -120,22 +128,22 @@ export default function ChallengeAdmin() {
                     </div>
 
                     <div className="space-y-4">
-                        <Label>Reading List</Label>
+                        <Label>{t('challenge.readingList')}</Label>
                         {texts.map((text, i) => (
-                            <div key={i} className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-background/50 border border-border/40">
+                            <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-background/50 border border-border/40">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] uppercase opacity-60">Title {i + 1}</Label>
+                                    <Label className="text-[10px] uppercase opacity-60">{t('challenge.title_n')} {i + 1}</Label>
                                     <Input
-                                        placeholder="Title"
+                                        placeholder={t('challenge.title_n')}
                                         value={text.title}
                                         onChange={(e) => handleTextChange(i, 'title', e.target.value)}
                                         className="bg-transparent border-none focus-visible:ring-1 focus-visible:ring-primary/20"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] uppercase opacity-60">Author {i + 1}</Label>
+                                    <Label className="text-[10px] uppercase opacity-60">{t('challenge.author_n')} {i + 1}</Label>
                                     <Input
-                                        placeholder="Author"
+                                        placeholder={t('challenge.author_n')}
                                         value={text.author}
                                         onChange={(e) => handleTextChange(i, 'author', e.target.value)}
                                         className="bg-transparent border-none focus-visible:ring-1 focus-visible:ring-primary/20"
@@ -146,13 +154,9 @@ export default function ChallengeAdmin() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Draft Pattern</Label>
-                        <div className="grid grid-cols-3 gap-3">
-                            {[
-                                { id: 'austere', name: 'Austere/Ritual', desc: 'Minimalist record keeping' },
-                                { id: 'atmospheric', name: 'Atmospheric', desc: 'Sensory observation' },
-                                { id: 'resonance', name: 'Resonance', desc: 'Intellectual connection' }
-                            ].map((p) => (
+                        <Label>{t('challenge.draftPattern')}</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {patternOptions.map((p) => (
                                 <button
                                     key={p.id}
                                     type="button"
@@ -180,7 +184,7 @@ export default function ChallengeAdmin() {
                         ) : (
                             <Wand2 className="mr-2 h-4 w-4" />
                         )}
-                        Generate X Post
+                        {t('challenge.generatePost')}
                     </Button>
                 </CardContent>
             </Card>
@@ -189,14 +193,14 @@ export default function ChallengeAdmin() {
                 <Card className="border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center justify-between">
-                            Draft Post
+                            {t('challenge.draftPost')}
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setIsPostExpanded(!isPostExpanded)}
-                                    title={isPostExpanded ? "Collapse" : "Expand"}
-                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                    title={isPostExpanded ? t('challenge.collapse') : t('challenge.expand')}
+                                    className="h-8 w-8 text-muted-foreground hover:text-foreground min-w-[44px]"
                                 >
                                     {isPostExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                                 </Button>
@@ -216,23 +220,23 @@ export default function ChallengeAdmin() {
                             <Textarea
                                 value={generatedPost}
                                 onChange={(e) => setGeneratedPost(e.target.value)}
-                                className={`w-full p-6 bg-background rounded-xl border border-border/50 font-serif text-lg leading-relaxed shadow-inner transition-all duration-300 ${
-                                    isPostExpanded ? 'min-h-[400px]' : 'min-h-[160px]'
+                                className={`w-full p-4 md:p-6 bg-background rounded-xl border border-border/50 font-serif text-base md:text-lg leading-relaxed shadow-inner transition-all duration-300 ${
+                                    isPostExpanded ? 'min-h-[250px] md:min-h-[400px]' : 'min-h-[120px] md:min-h-[160px]'
                                 } resize-y`}
                                 placeholder="Draft your post..."
                             />
                         </div>
                         
-                        <div className="flex justify-between items-center px-1 text-xs">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-1 text-xs">
                             <span className="text-muted-foreground">
-                                You can edit this text directly before posting.
+                                {t('challenge.editHint')}
                             </span>
                             <span className={`font-semibold px-2 py-0.5 rounded-full ${
                                 generatedPost.length > 280 
                                     ? 'bg-destructive/10 text-destructive animate-pulse' 
                                     : 'bg-muted text-muted-foreground'
                             }`}>
-                                {generatedPost.length} / 280 chars
+                                {generatedPost.length} / 280 {t('challenge.chars')}
                             </span>
                         </div>
 
@@ -247,7 +251,7 @@ export default function ChallengeAdmin() {
                                 ) : (
                                     <Send className="mr-2 h-4 w-4" />
                                 )}
-                                Approve & Post to X
+                                {t('challenge.approvePost')}
                             </Button>
                         </div>
                     </CardContent>

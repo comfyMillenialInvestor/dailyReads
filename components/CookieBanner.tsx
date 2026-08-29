@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { Cookie, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export function CookieBanner() {
     const [isVisible, setIsVisible] = useState(false);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const consent = localStorage.getItem('cookie-consent');
@@ -39,7 +41,7 @@ export function CookieBanner() {
                         <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary">
                             <Cookie className="h-5 w-5" />
                         </div>
-                        <h3 className="font-bold tracking-tight">Cookie Wisdom</h3>
+                        <h3 className="font-bold tracking-tight">{t('cookie.title')}</h3>
                         <button
                             onClick={() => setIsVisible(false)}
                             className="ml-auto p-1 hover:bg-muted rounded-full transition-colors opacity-50 hover:opacity-100"
@@ -49,7 +51,7 @@ export function CookieBanner() {
                     </div>
 
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        To provide you with the most thoughtful reading experience, we use subtle cookies to understand how you interact with our curated collection.
+                        {t('cookie.description')}
                     </p>
 
                     <div className="flex flex-col gap-3 pt-2">
@@ -57,7 +59,7 @@ export function CookieBanner() {
                             onClick={handleAccept}
                             className="bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest h-10 rounded-xl"
                         >
-                            Accept All
+                            {t('cookie.acceptAll')}
                         </Button>
                         <div className="flex items-center justify-between gap-2">
                             <Button
@@ -65,13 +67,13 @@ export function CookieBanner() {
                                 onClick={handleDecline}
                                 className="text-[10px] uppercase tracking-wider font-bold h-8 flex-1"
                             >
-                                Necessary Only
+                                {t('cookie.necessaryOnly')}
                             </Button>
                             <Link
                                 href="/datenschutz"
                                 className="text-[10px] text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 font-medium"
                             >
-                                Policy
+                                {t('cookie.policy')}
                             </Link>
                         </div>
                     </div>

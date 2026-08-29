@@ -11,6 +11,7 @@ import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 
 interface DailyReadsCarouselProps {
@@ -32,6 +33,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
     const [autoCompleted, setAutoCompleted] = React.useState(false);
     const [completionError, setCompletionError] = React.useState<string | null>(null);
     const firedRef = React.useRef(false);
+    const { lang, t } = useLanguage();
 
     // Reader Mode States
     const [readerItem, setReaderItem] = React.useState<IContent | null>(null);
@@ -224,8 +226,8 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
         return (
             <div className="flex flex-col justify-center items-center py-20 min-h-[600px] w-full max-w-4xl mx-auto">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-2 mt-4 text-muted-foreground font-serif italic text-lg animate-pulse">
-                    Flipping through pages...
+                <span className="ml-2 mt-4 text-muted-foreground font-serif italic text-base md:text-lg animate-pulse">
+                    {t('carousel.loading')}
                 </span>
             </div>
         );
@@ -233,29 +235,29 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
 
     if (error || items.length === 0) {
         if (items.length === 0 && !loading && !error) {
-            return <div className="text-center py-10">No content found for this selection. Try another theme or random.</div>
+            return <div className="text-center py-10 px-4">{t('carousel.noContent')}</div>
         }
         return (
-            <div className="text-center py-10">
+            <div className="text-center py-10 px-4">
                 <p className="text-destructive mb-4">{error}</p>
-                <Button onClick={onRefreshRandom}>Try Random</Button>
+                <Button onClick={onRefreshRandom}>{t('carousel.tryRandom')}</Button>
             </div>
         );
     }
 
     return (
         <div className="w-full max-w-4xl mx-auto px-4">
-            <div className="text-center mb-8 space-y-2">
-                <div className="inline-block px-4 py-1.5 bg-primary/5 rounded-full border border-primary/20 mb-2">
-                    <span className="text-sm font-medium text-primary tracking-wide uppercase">Today's Pause</span>
+            <div className="text-center mb-6 md:mb-8 space-y-2">
+                <div className="inline-block px-3 md:px-4 py-1.5 bg-primary/5 rounded-full border border-primary/20 mb-2">
+                    <span className="text-xs md:text-sm font-medium text-primary tracking-wide uppercase">{t('carousel.todaysPause')}</span>
                     {items[0]?.date && (
-                        <span className="ml-2 text-xs text-muted-foreground border-l pl-2">
+                        <span className="ml-2 text-[10px] md:text-xs text-muted-foreground border-l pl-2">
                             {new Date(items[0].date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
                         </span>
                     )}
                 </div>
-                <p className="text-lg font-serif italic text-muted-foreground">
-                    "Take 15–20 minutes. Read slowly. Return to work refreshed."
+                <p className="text-base md:text-lg font-serif italic text-muted-foreground px-2">
+                    {t('carousel.readingQuote')}
                 </p>
             </div>
 
@@ -264,9 +266,9 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                     {items.map((item, index) => (
                         <CarouselItem key={String(item._id) + index}>
                             <div className="p-1">
-                                <Card className="h-[calc(100vh-280px)] min-h-[460px] max-h-[600px] md:h-[600px] flex flex-col bg-card border-border shadow-lg">
-                                    <CardHeader className="pb-3 px-4 md:px-6">
-                                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <Card className="h-[calc(100vh-280px)] min-h-[400px] max-h-[600px] md:min-h-[460px] md:h-[600px] flex flex-col bg-card border-border shadow-lg">
+                                    <CardHeader className="pb-3 px-3 md:px-6">
+                                        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 md:gap-4">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2 mb-2">
                                                     <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
@@ -276,40 +278,40 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                         {item.theme}
                                                     </span>
                                                 </div>
-                                                <CardTitle className="text-xl md:text-2xl font-serif font-bold text-foreground mb-1 leading-tight line-clamp-2">
-                                                    {item.title}
+                                                <CardTitle className="text-lg md:text-2xl font-serif font-bold text-foreground mb-1 leading-tight line-clamp-2">
+                                                    {lang === 'de' && item.title_de ? item.title_de : (item.title_en || item.title)}
                                                 </CardTitle>
                                                 <CardDescription className="text-xs md:text-sm font-medium text-muted-foreground/80 truncate">
                                                     by {item.author} {item.source && <span>• {item.source}</span>}
                                                 </CardDescription>
                                             </div>
                                             <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 shrink-0">
-                                                <div className="text-left sm:text-right text-xs text-muted-foreground/80">
-                                                    {item.readTime && <div>{item.readTime} read</div>}
-                                                    {item.estimatedWords && <div>~{item.estimatedWords} words</div>}
+                                                <div className="text-left sm:text-right text-[10px] md:text-xs text-muted-foreground/80">
+                                                    {item.readTime && <div>{item.readTime} {t('carousel.read')}</div>}
+                                                    {item.estimatedWords && <div>~{item.estimatedWords} {t('carousel.words')}</div>}
                                                 </div>
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    className="flex items-center gap-1.5 text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200"
+                                                    className="flex items-center gap-1.5 text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200 min-h-[36px] min-w-[44px] px-3"
                                                     onClick={() => {
                                                         setReaderItem(item);
                                                         setScrollProgress(0);
                                                     }}
                                                 >
-                                                    <Maximize2 className="h-3 w-3" />
-                                                    <span>Expand</span>
+                                                    <Maximize2 className="h-3.5 w-3.5" />
+                                                    <span>{t('carousel.expand')}</span>
                                                 </Button>
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="flex-1 overflow-hidden relative px-4 md:px-6">
+                                    <CardContent className="flex-1 overflow-hidden relative px-3 md:px-6">
                                         <div className="h-full overflow-y-auto pr-2 font-serif text-foreground/90 leading-relaxed scrollbar-thin scrollbar-thumb-muted">
                                             <div className={`markdown-content ${item.type === 'poem' ? 'poetry-mode' : 'prose-mode'}`}>
                                                 <ReactMarkdown
                                                     components={{
                                                         p: ({ children }) => (
-                                                            <p className={`${item.type === 'poem' ? 'mb-2' : 'mb-6 text-justify'} text-lg leading-relaxed last:mb-0`}>
+                                                            <p className={`${item.type === 'poem' ? 'mb-2' : 'mb-5 md:mb-6 text-left md:text-justify'} text-base md:text-lg leading-relaxed last:mb-0`}>
                                                                 {children}
                                                             </p>
                                                         ),
@@ -317,40 +319,40 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                         strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
                                                     }}
                                                 >
-                                                    {item.content}
+                                                    {lang === 'de' && item.content_de ? item.content_de : (item.content_en || item.content)}
                                                 </ReactMarkdown>
                                             </div>
                                         </div>
                                     </CardContent>
 
-                                    <CardFooter className="flex flex-col border-t pt-4 px-4 md:px-6 pb-4 text-xs text-muted-foreground text-center space-y-3">
+                                    <CardFooter className="flex flex-col border-t pt-3 md:pt-4 px-3 md:px-6 pb-3 md:pb-4 text-xs text-muted-foreground text-center space-y-2 md:space-y-3">
                                         <div className="flex items-center justify-between w-full">
                                             <span className="font-medium">
-                                                {index + 1} of {items.length}
+                                                {index + 1} {t('carousel.of')} {items.length}
                                             </span>
                                             {index < items.length - 1 ? (
-                                                <span className="animate-pulse">Next: {items[index + 1].type.replace('_', ' ')} &rarr;</span>
+                                                <span className="animate-pulse">{t('carousel.next')}: {items[index + 1].type.replace('_', ' ')} &rarr;</span>
                                             ) : (
                                                 <div className="flex flex-col items-end gap-2">
                                                     {isPaid ? (
                                                         autoCompleted ? (
                                                             <div 
-                                                                className="flex flex-col items-end gap-3 animate-in fade-in zoom-in duration-700 cursor-pointer select-none group"
+                                                                className="flex flex-col items-end gap-2 md:gap-3 animate-in fade-in zoom-in duration-700 cursor-pointer select-none group"
                                                                 onClick={triggerFireworks}
                                                                 title="Click to celebrate again!"
                                                             >
-                                                                <div className="flex items-center gap-2 text-primary font-serif italic text-base group-hover:scale-105 transition-transform duration-200">
+                                                                <div className="flex items-center gap-2 text-primary font-serif italic text-sm md:text-base group-hover:scale-105 transition-transform duration-200">
                                                                     <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
-                                                                    "I showed up today."
+                                                                    {t('carousel.showedUp')}
                                                                 </div>
-                                                                <div className="flex items-center gap-4 group-hover:scale-105 transition-transform duration-200">
+                                                                <div className="flex items-center gap-3 md:gap-4 group-hover:scale-105 transition-transform duration-200">
                                                                     <div className="text-right">
-                                                                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Current Streak</div>
-                                                                        <div className="text-lg font-bold text-primary">{currentStreak} days</div>
+                                                                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('carousel.currentStreak')}</div>
+                                                                        <div className="text-base md:text-lg font-bold text-primary">{currentStreak} {t('carousel.days')}</div>
                                                                     </div>
                                                                     <Link href="/portal" onClick={(e) => e.stopPropagation()}>
-                                                                        <Button size="sm" variant="outline" className="rounded-full px-4 border-primary/30 hover:bg-primary/5">
-                                                                            View History &rarr;
+                                                                        <Button size="sm" variant="outline" className="rounded-full px-3 md:px-4 border-primary/30 hover:bg-primary/5 text-[10px] md:text-xs">
+                                                                            {t('carousel.viewHistory')} &rarr;
                                                                         </Button>
                                                                     </Link>
                                                                 </div>
@@ -360,10 +362,10 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                                 <Button
                                                                     size="sm"
                                                                     variant="default"
-                                                                    className="rounded-full px-6"
+                                                                    className="rounded-full px-4 md:px-6 text-xs"
                                                                     onClick={markAsCompleted}
                                                                 >
-                                                                    Mark Pause as Completed
+                                                                    {t('carousel.markCompleted')}
                                                                 </Button>
                                                                 {completionError && (
                                                                     <span className="text-[10px] text-destructive animate-pulse">{completionError}</span>
@@ -371,14 +373,14 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                             </>
                                                         )
                                                     ) : (
-                                                        <span className="italic text-primary/60">"You showed up today."</span>
+                                                        <span className="italic text-primary/60">{t('carousel.showedUp')}</span>
                                                     )}
                                                 </div>
                                             )}
                                         </div>
                                         {!isPaid && index === items.length - 1 && (
                                             <p className="text-[10px] text-muted-foreground/60 uppercase tracking-tighter">
-                                                * consistency tracking and personal reading history available for ritual members
+                                                {t('carousel.memberHint')}
                                             </p>
                                         )}
                                     </CardFooter>
@@ -425,69 +427,69 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                     {/* Top Control Bar */}
                     <div
                         className={cn(
-                            "sticky top-0 z-10 border-b px-4 py-3 flex items-center justify-between backdrop-blur-md",
+                            "sticky top-0 z-10 border-b px-3 md:px-4 py-2.5 md:py-3 flex items-center justify-between backdrop-blur-md",
                             readerTheme === 'sepia' && "border-[#E6DEC9]/60 bg-[#FBF6EF]/90",
                             readerTheme === 'dark' && "border-[#2F3034] bg-[#121317]/90",
                             readerTheme === 'system' && "border-border/60 bg-background/90"
                         )}
                     >
-                        <div className="flex-1 min-w-0 pr-4">
-                            <h2 className="text-sm font-bold truncate font-serif">
-                                {readerItem.title}
+                        <div className="flex-1 min-w-0 pr-2 md:pr-4">
+                            <h2 className="text-xs md:text-sm font-bold truncate font-serif">
+                                {lang === 'de' && readerItem.title_de ? readerItem.title_de : (readerItem.title_en || readerItem.title)}
                             </h2>
-                            <p className="text-xs opacity-75 truncate font-sans">
+                            <p className="text-[10px] md:text-xs opacity-75 truncate font-sans">
                                 by {readerItem.author}
                             </p>
                         </div>
 
                         {/* Control Panel */}
-                        <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                        <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
                             {/* Font Size Adjuster */}
                             <div className="flex items-center border rounded-full overflow-hidden p-0.5 bg-muted/20">
                                 <button
                                     onClick={decreaseTextSize}
-                                    className="p-1 px-2.5 text-xs font-semibold hover:bg-muted/40 rounded-full transition-colors"
-                                    title="Decrease text size"
+                                    className="p-1 px-1.5 md:px-2.5 text-[10px] md:text-xs font-semibold hover:bg-muted/40 rounded-full transition-colors"
+                                    title={t('carousel.decreaseTextSize')}
                                 >
                                     A-
                                 </button>
-                                <span className="text-[10px] uppercase font-bold opacity-60 px-1.5 border-x select-none">
+                                <span className="text-[9px] md:text-[10px] uppercase font-bold opacity-60 px-1 md:px-1.5 border-x select-none hidden sm:inline">
                                     {readerTextSize}
                                 </span>
                                 <button
                                     onClick={increaseTextSize}
-                                    className="p-1 px-2.5 text-xs font-semibold hover:bg-muted/40 rounded-full transition-colors"
-                                    title="Increase text size"
+                                    className="p-1 px-1.5 md:px-2.5 text-[10px] md:text-xs font-semibold hover:bg-muted/40 rounded-full transition-colors"
+                                    title={t('carousel.increaseTextSize')}
                                 >
                                     A+
                                 </button>
                             </div>
 
                             {/* Reading Theme selector */}
-                            <div className="flex items-center gap-1.5 border rounded-full p-1 bg-muted/20">
+                            <div className="flex items-center gap-1 md:gap-1.5 border rounded-full p-0.5 md:p-1 bg-muted/20">
                                 <button
                                     onClick={() => setReaderTheme('system')}
                                     className={cn(
-                                        "h-5 w-5 rounded-full border transition-all bg-card cursor-pointer",
+                                        "h-4 w-4 md:h-5 md:w-5 rounded-full border transition-all bg-card cursor-pointer",
                                         readerTheme === 'system' ? "ring-2 ring-primary border-transparent scale-110" : "opacity-75 hover:opacity-100"
                                     )}
-                                    title="System theme"
+                                    title={t('carousel.systemTheme')}
                                 />
                                 <button
                                     onClick={() => setReaderTheme('sepia')}
                                     className={cn(
-                                        "h-5 w-5 rounded-full border border-[#D5CBB3] bg-[#FBF6EF] transition-all cursor-pointer",
+                                        "h-4 w-4 md:h-5 md:w-5 rounded-full border border-[#D5CBB3] bg-[#FBF6EF] transition-all cursor-pointer",
                                         readerTheme === 'sepia' ? "ring-2 ring-amber-700/60 scale-110" : "opacity-75 hover:opacity-100"
                                     )}
-                                    title="Warm Sepia theme"
+                                    title={t('carousel.warmSepia')}
                                 />
                                 <button
                                     onClick={() => setReaderTheme('dark')}
                                     className={cn(
-                                        "h-5 w-5 rounded-full border border-zinc-800 bg-zinc-950 transition-all cursor-pointer",
+                                        "h-4 w-4 md:h-5 md:w-5 rounded-full border border-zinc-800 bg-zinc-950 transition-all cursor-pointer",
                                         readerTheme === 'dark' ? "ring-2 ring-zinc-400 scale-110" : "opacity-75 hover:opacity-100"
                                     )}
-                                    title="Dark theme"
+                                    title={t('carousel.darkTheme')}
                                 />
                             </div>
 
@@ -496,8 +498,8 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => setReaderItem(null)}
-                                className="rounded-full h-8 w-8 hover:bg-muted/50"
-                                title="Close Reader Mode"
+                                className="rounded-full h-7 w-7 md:h-8 md:w-8 hover:bg-muted/50"
+                                title={t('carousel.closeReader')}
                             >
                                 <X className="h-4 w-4" />
                             </Button>
@@ -516,41 +518,41 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                     </div>
 
                     {/* Reader Text Area */}
-                    <div className="flex-1 w-full max-w-2xl mx-auto px-6 py-12 md:py-20 flex flex-col justify-between">
+                    <div className="flex-1 w-full max-w-2xl mx-auto px-4 md:px-6 py-8 md:py-20 flex flex-col justify-between">
                         <div>
                             {/* Meta header in reader */}
-                            <div className="text-center mb-12 space-y-4">
+                            <div className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4">
                                 <span className={cn(
                                     "inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full",
                                     readerTheme === 'sepia' ? "bg-[#E6DEC9] text-[#5B4636]" : readerTheme === 'dark' ? "bg-zinc-800 text-zinc-300" : "bg-primary/10 text-primary"
                                 )}>
                                     {readerItem.type.replace('_', ' ')}
                                 </span>
-                                <h1 className="text-3xl md:text-5xl font-serif font-extrabold tracking-tight leading-tight">
-                                    {readerItem.title}
+                                <h1 className="text-2xl md:text-5xl font-serif font-extrabold tracking-tight leading-tight">
+                                    {lang === 'de' && readerItem.title_de ? readerItem.title_de : (readerItem.title_en || readerItem.title)}
                                 </h1>
-                                <div className="text-base md:text-lg opacity-85 font-serif italic">
+                                <div className="text-sm md:text-lg opacity-85 font-serif italic">
                                     by {readerItem.author}
                                 </div>
-                                <div className="flex items-center justify-center gap-4 text-xs opacity-60 font-sans">
-                                    {readerItem.readTime && <span>{readerItem.readTime} read</span>}
-                                    {readerItem.estimatedWords && <span>~{readerItem.estimatedWords} words</span>}
-                                    {readerItem.source && <span>Source: {readerItem.source}</span>}
+                                <div className="flex items-center justify-center gap-3 md:gap-4 text-[10px] md:text-xs opacity-60 font-sans flex-wrap">
+                                    {readerItem.readTime && <span>{readerItem.readTime} {t('carousel.read')}</span>}
+                                    {readerItem.estimatedWords && <span>~{readerItem.estimatedWords} {t('carousel.words')}</span>}
+                                    {readerItem.source && <span>{t('carousel.source')}: {readerItem.source}</span>}
                                 </div>
-                                <div className="h-[1px] w-24 mx-auto bg-muted-foreground/30 my-6" />
+                                <div className="h-[1px] w-24 mx-auto bg-muted-foreground/30 my-4 md:my-6" />
                             </div>
 
                             {/* Main story text */}
                             <div className={cn(
                                 "markdown-content prose-lg max-w-none leading-relaxed",
-                                readerItem.type === 'poem' ? 'poetry-mode font-serif pl-4 md:pl-12 italic' : 'prose-mode font-serif'
+                                readerItem.type === 'poem' ? 'poetry-mode font-serif pl-2 md:pl-12 italic' : 'prose-mode font-serif'
                             )}>
                                 <ReactMarkdown
                                     components={{
                                         p: ({ children }) => (
                                             <p
                                                 className={cn(
-                                                    readerItem.type === 'poem' ? 'mb-3' : 'mb-8 text-justify',
+                                                    readerItem.type === 'poem' ? 'mb-3' : 'mb-6 md:mb-8 text-left md:text-justify',
                                                     readerTextSize === 'sm' && "text-sm md:text-base",
                                                     readerTextSize === 'base' && "text-base md:text-lg",
                                                     readerTextSize === 'lg' && "text-lg md:text-xl",
@@ -565,23 +567,23 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                         strong: ({ children }) => <strong className="font-bold">{children}</strong>,
                                     }}
                                 >
-                                    {readerItem.content}
+                                    {lang === 'de' && readerItem.content_de ? readerItem.content_de : (readerItem.content_en || readerItem.content)}
                                 </ReactMarkdown>
                             </div>
                         </div>
 
                         {/* Reader mode footer */}
-                        <div className="mt-16 text-center">
-                            <div className="h-[1px] w-full bg-muted-foreground/20 my-8" />
+                        <div className="mt-12 md:mt-16 text-center">
+                            <div className="h-[1px] w-full bg-muted-foreground/20 my-6 md:my-8" />
                             <p className="text-sm opacity-60 italic font-serif mb-6">
-                                "Take a breath. Rest your eyes before returning to your day."
+                                {t('carousel.readerQuote')}
                             </p>
                             <Button
                                 onClick={() => setReaderItem(null)}
                                 variant="outline"
                                 className="rounded-full px-6 border-primary/20"
                             >
-                                Finish Reading
+                                {t('carousel.finishReading')}
                             </Button>
                         </div>
                     </div>
