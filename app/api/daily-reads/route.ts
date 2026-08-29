@@ -29,69 +29,70 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // We need 1 story, 1 poem, 1 essay
-        const types: ContentType[] = ['short_story', 'poem', 'essay'];
-        const results = [];
+        // Target word count is 4000 words (~20 minutes of reading time at 200 words/minute)
+        const TARGET_WORDS = 4000;
 
-        // Debug: Log database contents
-        console.log('\n=== DATABASE INSPECTION ===');
-        console.log(`Using collection: ${Content.collection.name}`);
-        for (const type of types) {
-            const count = await Content.countDocuments({ type });
-            console.log(`Total ${type} in database: ${count}`);
-        }
-        console.log('===========================\n');
-
-
-        for (const type of types) {
-            let doc;
-
-            // Build match query
+        const fetchPool = async (type: ContentType) => {
             const matchStage: any = { type };
             if (theme) matchStage.theme = theme;
-
-            console.log(`\n--- Querying for type: ${type} ---`);
-            console.log('Match criteria:', JSON.stringify(matchStage));
-
-            // Count total documents matching criteria
-            const totalCount = await Content.countDocuments(matchStage);
-            console.log(`Total ${type} documents matching criteria: ${totalCount}`);
-
-            // Use MongoDB's $sample for true random selection
-            // $sample uses a pseudo-random cursor which provides better randomness
-            const pipeline: any[] = [
+            
+            let docs = await Content.aggregate([
                 { $match: matchStage },
-                { $sample: { size: 1 } }
-            ];
-
-            const docs = await Content.aggregate(pipeline);
-
-            if (docs.length > 0) {
-                doc = docs[0];
-                console.log(`✓ Found via main query: "${doc.title}" (ID: ${doc._id})`);
-            } else if (theme) {
+                { $sample: { size: 15 } }
+            ]);
+            
+            if (docs.length === 0 && theme) {
                 // Fallback: try without theme filter
-                console.log(`⚠ No ${type} found with theme "${theme}", trying fallback without theme...`);
-                const fallbackMatchStage = { type };
-                const fallbackCount = await Content.countDocuments(fallbackMatchStage);
-                console.log(`Total ${type} documents in fallback: ${fallbackCount}`);
-
-                const fallbackPipeline: any[] = [
-                    { $match: fallbackMatchStage },
-                    { $sample: { size: 1 } }
-                ];
-
-                const fallbackDocs = await Content.aggregate(fallbackPipeline);
-                if (fallbackDocs.length > 0) {
-                    doc = fallbackDocs[0];
-                    console.log(`✓ Found via fallback: "${doc.title}" (ID: ${doc._id})`);
-                }
-            } else {
-                console.log(`✗ No ${type} documents found at all!`);
+                docs = await Content.aggregate([
+                    { $match: { type } },
+                    { $sample: { size: 15 } }
+                ]);
             }
+            return docs;
+        };
 
-            if (doc) {
-                results.push(doc);
+        const stories = await fetchPool('short_story');
+        const poems = await fetchPool('poem');
+        const essays = await fetchPool('essay');
+
+        const results = [];
+
+        if (stories.length > 0 && poems.length > 0 && essays.length > 0) {
+            let bestCombo: any[] = [];
+            let closestDiff = Infinity;
+
+            for (const story of stories) {
+                const sWords = story.estimatedWords || (story.content ? story.content.split(/\s+/).length : 2000);
+                for (const poem of poems) {
+                    const pWords = poem.estimatedWords || (poem.content ? poem.content.split(/\s+/).length : 150);
+                    for (const essay of essays) {
+                        const eWords = essay.estimatedWords || (essay.content ? essay.content.split(/\s+/).length : 1500);
+
+                        const totalWords = sWords + pWords + eWords;
+                        const diff = Math.abs(totalWords - TARGET_WORDS);
+
+                        if (diff < closestDiff) {
+                            closestDiff = diff;
+                            bestCombo = [story, poem, essay];
+                        }
+                    }
+                }
+            }
+            results.push(...bestCombo);
+            console.log(`✓ Selected optimal 20-min combination (Diff: ${closestDiff} words from target)`);
+        } else {
+            // Fallback: simple standalone queries if any pool is empty
+            const types: ContentType[] = ['short_story', 'poem', 'essay'];
+            for (const type of types) {
+                const matchStage: any = { type };
+                if (theme) matchStage.theme = theme;
+                const docs = await Content.aggregate([
+                    { $match: matchStage },
+                    { $sample: { size: 1 } }
+                ]);
+                if (docs.length > 0) {
+                    results.push(docs[0]);
+                }
             }
         }
 

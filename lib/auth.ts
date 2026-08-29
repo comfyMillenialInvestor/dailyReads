@@ -46,30 +46,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     callbacks: {
         async jwt({ token, user }) {
             console.debug('JWT Callback:', { hasUser: !!user, tokenEmail: token.email, tokenId: token.id });
-            if (user) {
-                token.id = user.id;
-                token.email = user.email;
-                token.currentStreak = (user as any).currentStreak || 0;
-                token.longestStreak = (user as any).longestStreak || 0;
-            }
-
-            // Aggressive override for testing mode: ensure isPaid and ID are ALWAYS present
-            if (token.email === 'test@test.com') {
-                token.isPaid = true;
-                // Always fetch latest streak for the test user to avoid stale session data
+            
+            // Always fetch the latest data from the database to keep the session in sync
+            if (token.email) {
                 await dbConnect();
-                const dbUser = await User.findOne({ email: 'test@test.com' });
+                const dbUser = await User.findOne({ email: token.email });
                 if (dbUser) {
                     token.id = dbUser._id.toString();
                     token.currentStreak = dbUser.currentStreak || 0;
                     token.longestStreak = dbUser.longestStreak || 0;
-                    console.debug('Found latest data for test user:', { id: token.id, streak: token.currentStreak });
-                } else {
-                    console.warn('Test user test@test.com not found in database!');
+                    token.isPaid = dbUser.isPaid || false;
+                    console.debug('Found latest database values for user:', { email: token.email, isPaid: token.isPaid, streak: token.currentStreak });
                 }
-                console.debug('Forcing isPaid:true for test@test.com');
-            } else if (user) {
+            }
+
+            if (user && !token.id) {
+                token.id = user.id;
+                token.email = user.email;
+                token.currentStreak = (user as any).currentStreak || 0;
+                token.longestStreak = (user as any).longestStreak || 0;
                 token.isPaid = (user as any).isPaid || false;
+            }
+
+            // Aggressive override for testing mode
+            if (token.email === 'test@test.com') {
+                token.isPaid = true;
+                console.debug('Forcing isPaid:true for test@test.com');
             }
 
             return token;

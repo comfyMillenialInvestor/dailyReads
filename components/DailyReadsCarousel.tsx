@@ -268,7 +268,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                             <div className="p-1">
                                 <Card className="h-[calc(100vh-280px)] min-h-[400px] max-h-[600px] md:min-h-[460px] md:h-[600px] flex flex-col bg-card border-border shadow-lg">
                                     <CardHeader className="pb-3 px-3 md:px-6">
-                                        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 md:gap-4">
+                                        <div className="flex justify-between items-start gap-3 md:gap-4 w-full">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2 mb-2">
                                                     <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
@@ -282,12 +282,13 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                     {lang === 'de' && item.title_de ? item.title_de : (item.title_en || item.title)}
                                                 </CardTitle>
                                                 <CardDescription className="text-xs md:text-sm font-medium text-muted-foreground/80 truncate">
-                                                    by {item.author} {item.source && <span>• {item.source}</span>}
+                                                    by {item.author} {item.source && !(item.source.startsWith("HF:") || item.source.startsWith("HF: ") || item.source.length > 20) && <span>• {item.source}</span>}
                                                 </CardDescription>
                                             </div>
-                                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 shrink-0">
-                                                <div className="text-left sm:text-right text-[10px] md:text-xs text-muted-foreground/80">
-                                                    {item.readTime && <div>{item.readTime} {t('carousel.read')}</div>}
+
+                                            <div className="flex flex-col items-end gap-2 shrink-0">
+                                                <div className="text-right text-[10px] md:text-xs text-muted-foreground/80 leading-tight">
+                                                    {item.readTime && <div>{item.readTime}</div>}
                                                     {item.estimatedWords && <div>~{item.estimatedWords} {t('carousel.words')}</div>}
                                                 </div>
                                                 <Button
@@ -321,6 +322,11 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                 >
                                                     {lang === 'de' && item.content_de ? item.content_de : (item.content_en || item.content)}
                                                 </ReactMarkdown>
+                                                {item.source && (item.source.startsWith("HF:") || item.source.startsWith("HF: ") || item.source.length > 20) && (
+                                                    <div className="mt-8 pt-4 border-t border-border/20 text-[10px] text-muted-foreground/50 font-sans italic">
+                                                        Source: {item.source}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </CardContent>
@@ -537,7 +543,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                 <div className="flex items-center justify-center gap-3 md:gap-4 text-[10px] md:text-xs opacity-60 font-sans flex-wrap">
                                     {readerItem.readTime && <span>{readerItem.readTime} {t('carousel.read')}</span>}
                                     {readerItem.estimatedWords && <span>~{readerItem.estimatedWords} {t('carousel.words')}</span>}
-                                    {readerItem.source && <span>{t('carousel.source')}: {readerItem.source}</span>}
+                                    {readerItem.source && !(readerItem.source.startsWith("HF:") || readerItem.source.startsWith("HF: ") || readerItem.source.length > 20) && <span>{t('carousel.source')}: {readerItem.source}</span>}
                                 </div>
                                 <div className="h-[1px] w-24 mx-auto bg-muted-foreground/30 my-4 md:my-6" />
                             </div>
@@ -569,6 +575,11 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                 >
                                     {lang === 'de' && readerItem.content_de ? readerItem.content_de : (readerItem.content_en || readerItem.content)}
                                 </ReactMarkdown>
+                                {readerItem.source && (readerItem.source.startsWith("HF:") || readerItem.source.startsWith("HF: ") || readerItem.source.length > 20) && (
+                                    <div className="mt-8 pt-4 border-t border-border/20 text-xs text-muted-foreground/50 font-sans italic text-center">
+                                        Source: {readerItem.source}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
