@@ -71,7 +71,7 @@ export default function Home() {
           <div className="flex flex-col items-center gap-4 pt-2">
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
               <a
-                href="https://x.com/dailyreads"
+                href="https://x.com/dailyReads_io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors flex items-center gap-2"

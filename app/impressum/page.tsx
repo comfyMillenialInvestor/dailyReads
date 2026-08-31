@@ -25,9 +25,11 @@ export default function Impressum() {
                             Diensteanbieter
                         </h3>
                         <div className="p-6 bg-muted/30 rounded-2xl border border-border/50 leading-relaxed">
+                            <p className="font-bold text-foreground">Curionis Intelligence</p>
+                            <p className="text-xs text-muted-foreground mb-2">Einzelunternehmen</p>
                             <p className="font-medium text-foreground">Lennart Severin</p>
-                            <p className="text-muted-foreground">[Straße Hausnummer]</p>
-                            <p className="text-muted-foreground">[PLZ Ort]</p>
+                            <p className="text-muted-foreground">Denzlinger Straße</p>
+                            <p className="text-muted-foreground">79108 Freiburg</p>
                             <p className="text-muted-foreground">Deutschland</p>
                         </div>
                     </div>
@@ -58,9 +60,10 @@ export default function Impressum() {
                         </h3>
                         <p className="text-xs text-muted-foreground italic px-1">gemäß § 18 Abs. 2 MStV:</p>
                         <div className="p-6 bg-muted/30 rounded-2xl border border-border/50 leading-relaxed">
+                            <p className="font-bold text-foreground">Curionis Intelligence</p>
                             <p className="font-medium text-foreground">Lennart Severin</p>
-                            <p className="text-muted-foreground">[Straße Hausnummer]</p>
-                            <p className="text-muted-foreground">[PLZ Ort]</p>
+                            <p className="text-muted-foreground">Denzlinger Straße</p>
+                            <p className="text-muted-foreground">79108 Freiburg</p>
                         </div>
                     </div>
 

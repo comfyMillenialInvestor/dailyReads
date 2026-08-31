@@ -86,10 +86,10 @@ export default function Ueber() {
                 <div className="pt-8 flex flex-col items-center space-y-6">
                     <div className="h-px w-24 bg-border/50" />
                     <div className="flex items-center gap-4">
-                        <a href="https://linkedin.com/company/dailyreads" target="_blank" rel="noopener noreferrer" className="p-2 bg-muted/50 rounded-full border border-border/50 hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
+                        <a href="https://www.linkedin.com/in/lennart-severin-978503353/" target="_blank" rel="noopener noreferrer" className="p-2 bg-muted/50 rounded-full border border-border/50 hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
                             <Linkedin className="h-5 w-5" />
                         </a>
-                        <a href="https://x.com/dailyreads" target="_blank" rel="noopener noreferrer" className="p-2 bg-muted/50 rounded-full border border-border/50 hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
+                        <a href="https://x.com/dailyReads_io" target="_blank" rel="noopener noreferrer" className="p-2 bg-muted/50 rounded-full border border-border/50 hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
                             <Twitter className="h-5 w-5" />
                         </a>
                     </div>

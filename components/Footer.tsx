@@ -42,16 +42,16 @@ export function Footer() {
                             </Link>
                         </li>
                         <li>
-                            <a href="https://x.com/dailyreads" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <a href="https://x.com/dailyReads_io" target="_blank" rel="noopener noreferrer" className="hover:underline">
                                 Twitter / X
                             </a>
                         </li>
                         <li>
-                            <a href="https://linkedin.com/company/dailyreads" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <a href="https://www.linkedin.com/in/lennart-severin-978503353/" target="_blank" rel="noopener noreferrer" className="hover:underline">
                                 LinkedIn
                             </a>
                         </li>
-                        <li><span className="text-xs mt-2 block opacity-50">© 2026 Daily Reads</span></li>
+                        <li><span className="text-xs mt-2 block opacity-50">© 2026 Curionis Intelligence</span></li>
                     </ul>
                 </div>
             </div>

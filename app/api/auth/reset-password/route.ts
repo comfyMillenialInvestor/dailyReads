@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
                 from: process.env.EMAIL_FROM || '"Daily Reads Support" <support@dailyreads.eu>',
                 to: email,
                 subject: 'Your Password Has Been Reset - Daily Reads',
-                text: `Daily Reads\n\nYour password has been reset.\n\nYour new temporary password is: ${newPassword}\n\nPlease log in to your portal and change this password immediately: https://www.dailyreads.eu/auth/login\n\nWarmly,\nThe Daily Reads Team\nsupport@dailyreads.eu`,
+                text: `Daily Reads\n\nYour password has been reset.\n\nYour new temporary password is: ${newPassword}\n\nPlease log in to your portal and change this password immediately: https://www.dailyreads.eu/auth/login\n\nWarmly,\nThe Daily Reads Team\nsupport@dailyreads.eu\n\n© 2026 Curionis Intelligence\nImpressum: https://www.dailyreads.eu/impressum\nDatenschutz: https://www.dailyreads.eu/datenschutz`,
                 html: `
                 <!DOCTYPE html>
                 <html>
@@ -122,7 +122,10 @@ export async function POST(request: NextRequest) {
                                                 If you did not request a password reset, you can safely ignore this email.
                                             </p>
                                             <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #b2bbc5; text-transform: uppercase; letter-spacing: 0.05em;">
-                                                © 2026 Daily Reads &bull; <a href="https://www.dailyreads.eu" target="_blank" style="color: #b2bbc5; text-decoration: underline;">www.dailyreads.eu</a>
+                                                © 2026 Curionis Intelligence &bull; <a href="https://www.dailyreads.eu" target="_blank" style="color: #b2bbc5; text-decoration: underline;">www.dailyreads.eu</a>
+                                            </p>
+                                            <p style="margin: 8px 0 0 0; font-size: 11px; line-height: 1.5; color: #b2bbc5;">
+                                                <a href="https://www.dailyreads.eu/impressum" target="_blank" style="color: #b2bbc5; text-decoration: underline;">Impressum</a> &bull; <a href="https://www.dailyreads.eu/datenschutz" target="_blank" style="color: #b2bbc5; text-decoration: underline;">Datenschutz</a>
                                             </p>
                                         </td>
                                     </tr>
