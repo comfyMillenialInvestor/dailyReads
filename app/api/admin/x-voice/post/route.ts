@@ -7,19 +7,40 @@ import { publishToX } from '@/lib/x-voice/x-client';
 export async function POST(req: Request) {
     try {
         await dbConnect();
-        const { suggestionId, text, inReplyToTweetId } = await req.json();
+        const { suggestionId, text, inReplyToTweetId, recordOnly = false } = await req.json();
 
         if (!text || typeof text !== 'string') {
             return NextResponse.json({ error: 'Text cannot be empty' }, { status: 400 });
         }
 
-        // 1. Publish to X via official API
-        const published = await publishToX({
-            text,
-            inReplyToTweetId,
-        });
+        let tweetId = `web_${Date.now()}`;
 
-        const tweetId = published.id;
+        if (!recordOnly) {
+            // 1. Publish to X via official API
+            try {
+                const published = await publishToX({
+                    text,
+                    inReplyToTweetId,
+                });
+                tweetId = published.id;
+            } catch (apiError: any) {
+                const detail = apiError?.data?.detail || apiError?.message || 'Failed to publish to X';
+                console.error('Twitter API publishing error:', detail);
+                
+                const isTierRestriction = 
+                    detail.includes('only reply to or quote posts where you are mentioned') ||
+                    apiError?.status === 403 ||
+                    apiError?.code === 403;
+
+                return NextResponse.json({
+                    error: isTierRestriction
+                        ? 'X API Free Tier restricts automated bot replies to posts where you are mentioned. Use the "Reply on X ↗" button below to post with your text pre-filled in 1 click!'
+                        : detail,
+                    isTierRestriction,
+                    canUseWebIntent: true,
+                }, { status: 403 });
+            }
+        }
 
         // 2. Update the suggestion record if suggestionId was provided
         let wasEdited = false;

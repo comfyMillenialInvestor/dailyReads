@@ -542,6 +542,56 @@ export default function XSuggestionsAdmin() {
         }
     };
 
+    // Record a 1-click Web Intent reply into the voice learning loop
+    const handleRecordIntentReply = async (tweet: DiscoveredTweet) => {
+        const draft = inlineDrafts[tweet.id];
+        if (!draft) return;
+
+        try {
+            await fetch('/api/admin/x-voice/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    suggestionId: draft.suggestionId,
+                    text: draft.text,
+                    inReplyToTweetId: tweet.id,
+                    recordOnly: true,
+                }),
+            });
+
+            setInlineDrafts((prev) => ({
+                ...prev,
+                [tweet.id]: {
+                    ...prev[tweet.id],
+                    isPosted: true,
+                    error: undefined,
+                },
+            }));
+
+            if (draft.suggestionId) {
+                setSuggestions((prev) =>
+                    prev.map((s) =>
+                        s._id === draft.suggestionId
+                            ? {
+                                  ...s,
+                                  status: 'posted',
+                                  finalText: draft.text,
+                                  postedAt: new Date().toISOString(),
+                              }
+                            : s
+                    )
+                );
+            }
+
+            setStatusMessage({
+                type: 'success',
+                text: 'Opened reply on X! Your interaction and edits were recorded into your voice learning loop.',
+            });
+        } catch (e) {
+            console.warn('Could not record intent reply:', e);
+        }
+    };
+
     const handleDismissTweet = (tweetId: string) => {
         setDismissedTweetIds((prev) => [...prev, tweetId]);
     };
@@ -1635,8 +1685,8 @@ export default function XSuggestionsAdmin() {
                                                     <div className="p-4 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-3 animate-in slide-in-from-top-2 duration-200">
                                                         <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 font-semibold text-[11px] flex items-center gap-1">
-                                                                    <Sparkles className="h-3 w-3" />
+                                                                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 font-semibold text-[11px] flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                                                                    <Sparkles className="h-3.5 w-3.5" />
                                                                     {draft.voiceMatchScore || 94}% Authentic Match
                                                                 </span>
                                                                 {draft.selectedAngle && (
@@ -1676,6 +1726,21 @@ export default function XSuggestionsAdmin() {
                                                             placeholder="Edit your authentic reply..."
                                                         />
 
+                                                        {/* Error Notice */}
+                                                        {draft.error && (
+                                                            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-800 dark:text-amber-200 space-y-1 animate-in fade-in">
+                                                                <div className="flex items-start gap-2">
+                                                                    <AlertCircle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                                                                    <div>
+                                                                        <p className="font-semibold">{draft.error}</p>
+                                                                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                                                                            Tip: Click <strong>"Reply on X ↗"</strong> below to publish immediately in 1 click with your text pre-filled.
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
                                                             {/* Re-draft with angle buttons */}
                                                             {!isPosted && (
@@ -1694,11 +1759,11 @@ export default function XSuggestionsAdmin() {
                                                             )}
 
                                                             {/* Action buttons */}
-                                                            <div className="flex items-center gap-2 ml-auto">
+                                                            <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
                                                                 {isPosted ? (
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                                                                            <Check className="h-3.5 w-3.5" /> Published to X!
+                                                                            <Check className="h-3.5 w-3.5" /> Reply logged!
                                                                         </span>
                                                                         <a
                                                                             href={tweet.url}
@@ -1742,18 +1807,34 @@ export default function XSuggestionsAdmin() {
                                                                             Copy
                                                                         </Button>
 
+                                                                        {/* 1-Click Web Intent Reply (100% reliable across all X accounts & free tier) */}
+                                                                        <a
+                                                                            href={`https://x.com/intent/tweet?in_reply_to=${tweet.id}&text=${encodeURIComponent(draft.text)}`}
+                                                                            target="_blank"
+                                                                            rel="noreferrer"
+                                                                            onClick={() => handleRecordIntentReply(tweet)}
+                                                                            className="h-8 px-3 text-xs bg-[#1D9BF0] hover:bg-[#1A8CD8] text-white font-medium rounded-md flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                                                                            title="Open Twitter reply composer with this text pre-filled"
+                                                                        >
+                                                                            <Twitter className="h-3.5 w-3.5" />
+                                                                            Reply on X ↗
+                                                                        </a>
+
+                                                                        {/* Direct API Post */}
                                                                         <Button
                                                                             size="sm"
+                                                                            variant="outline"
                                                                             onClick={() => handlePostInlineReply(tweet)}
                                                                             disabled={draft.isPosting || isOverLimit || !draft.text.trim()}
-                                                                            className="h-8 text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
+                                                                            className="h-8 text-xs font-medium"
+                                                                            title="Post automatically via X API (Requires API Write permission)"
                                                                         >
                                                                             {draft.isPosting ? (
                                                                                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                                                                             ) : (
                                                                                 <Send className="mr-1.5 h-3.5 w-3.5" />
                                                                             )}
-                                                                            Post to X (Official API)
+                                                                            Post via API
                                                                         </Button>
                                                                     </>
                                                                 )}
