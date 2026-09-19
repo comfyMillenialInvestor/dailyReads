@@ -55,28 +55,44 @@ Your published X posts & replies
 
 ## How to Use in the Admin Panel
 
-1. **Open the Dashboard**: Navigate to `/admin/x-suggestions` in your browser.
+### URLs to Access the Admin Area
+* **Production Live URL**: `https://dailyreads.eu/admin/x-suggestions` (or `https://<your-deployed-domain>/admin/x-suggestions`)
+* **Ray Bradbury Challenge Logger**: `https://dailyreads.eu/admin/challenge`
+* **Local Development**: `http://localhost:3000/admin/x-suggestions`
+
+> [!NOTE]
+> All `/admin/*` routes are protected by HTTP Basic Authentication:
+> * **Username**: `admin` (or `ADMIN_USER` in `.env.local` / production environment variables)
+> * **Password**: Defined by `ADMIN_PASSWORD` in `.env.local` / production environment variables (e.g. `test123`).
+
+---
+
+### Step-by-Step Workflow
+
+1. **Open the Dashboard**: Navigate to `/admin/x-suggestions`.
 2. **Sync From X**:
-   - Click the **"Sync from X"** button in the header.
-   - The system retrieves your latest posts and replies, cataloging them into standalone posts and conversational replies.
+   - Click **"Sync from X"** to ingest your latest published tweets and replies.
 3. **Inspect the Learned Voice**:
-   - The dashboard displays your active **Voice Profile version**, analyzed post counts, and streak.
-   - Click **"Learned Traits"** to inspect how DeepSeek characterized your sentence structure, humor, emoji habits, and authentic quotes extracted from your timeline.
-   - Click **"Re-Learn Voice"** anytime you want to refresh the linguistic model.
-4. **Generate Standalone Suggestions (Manual or 2x Daily)**:
-   - **Morning Post**: Generates an early morning observation, reading kickoff, or reflection.
-   - **Evening Post**: Generates a winding-down thought or reading streak reflection.
-   - **Instant Standalone Post**: Immediate post suggestion tailored to your authentic tone.
-5. **Find People & Conversations to Comment On (Growth & Feed)**:
-   - Click the toggle **"Find People & Posts to Comment On"** at the top of the dashboard.
-   - Switch between **"Home Feed"** (see recent tweets from accounts you follow, e.g. authors like `@AuthorGFAllen`) and **"Literature & Reading Discussions"** (discover active conversations on X about books, short stories, essays, and reading habits).
-   - Click **"Draft Reply in My Voice"** on any discovered tweet.
-   - Your personal copilot immediately analyzes that specific person's post and drafts a genuine, peer-to-peer reply in your learned voice.
-6. **Review, Edit & Publish**:
-   - Each suggestion card shows the draft, character count (max 280), and DeepSeek's **Human Copilot Match Score** (audited against generic AI social media manager tropes).
-   - Edit the draft directly in the box. Notice the amber delta indicator confirming that your edits will teach the copilot your exact refinement habits.
-   - Click **"Approve & Post to X (Official API)"** to publish directly as a tweet or reply.
-   - Click **✕** to reject, with quick feedback tags (*"Sounds like generic AI"*, *"Too promotional"*, *"Awkward phrasing"*) that teach the model what you reject.
+   - Inspect your active **Voice Profile version**, analyzed post counts, and streak.
+   - Click **"Learned Traits"** to inspect linguistic dimensions.
+4. **Discover & Comment on Others' Posts ("Find People & Posts to Comment On")**:
+   - Switch between **"Home Feed"** (accounts you follow) and **"Literature & Discussions"** (discover organic book discussions).
+   - **One-Click Topic Chips**: Filter instantly by *Short Stories & Reading*, *Ray Bradbury & Routine*, *Philosophy & Stoics*, *Writing & Essays*, or *Book Discussions*.
+   - **Authentic X Cards**: Complete with avatar pictures, `@handles`, relative time, engagement counts (💬 replies, 🔁 retweets, ❤️ likes), and direct links.
+   - **Hide Noise (✕ / Eye-off)**: Dismiss posts you don't care about to keep your feed clean.
+5. **Interactive Inline Reply Workbench (No Tab Switching)**:
+   - Click **"Draft Reply in My Voice"** or pick a specific **Lens Preset**:
+     - `💡 Insightful Take`
+     - `❓ Thoughtful Question`
+     - `📚 Bradbury / Routine`
+     - `🤝 Warm Nuance`
+   - The interactive workbench expands **inline directly below the tweet**.
+   - Edit the draft in-place with real-time character counting (`/280`) and authentic voice score verification.
+   - Click **"Post to X (Official API)"** to publish your reply directly from the card!
+   - You can also **Copy to Clipboard** or switch lenses on the fly.
+6. **Copilot Standalone Suggestions**:
+   - Access **"Copilot Drafts"** to review 2x daily standalone reading reflections.
+   - Edit, approve, or reject with continuous feedback.
 
 ---
 

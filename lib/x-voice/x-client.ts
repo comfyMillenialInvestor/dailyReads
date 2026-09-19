@@ -160,8 +160,14 @@ export interface DiscoveredTweet {
     createdAt?: string;
     authorName: string;
     authorUsername: string;
+    authorAvatar?: string;
     url: string;
     source: 'home' | 'search';
+    metrics?: {
+        retweetCount?: number;
+        replyCount?: number;
+        likeCount?: number;
+    };
 }
 
 /**
@@ -173,15 +179,15 @@ export async function fetchHomeTimelineFeed(maxResults = 20): Promise<Discovered
     const res = await client.v2.homeTimeline({
         max_results: Math.min(Math.max(maxResults, 5), 50),
         exclude: ['retweets'],
-        'tweet.fields': ['created_at', 'author_id', 'text', 'conversation_id'],
+        'tweet.fields': ['created_at', 'author_id', 'text', 'conversation_id', 'public_metrics'],
         expansions: ['author_id'],
-        'user.fields': ['name', 'username'],
+        'user.fields': ['name', 'username', 'profile_image_url'],
     });
 
     const usersMap = new Map();
     res.includes?.users?.forEach((u) => usersMap.set(u.id, u));
 
-    const tweets = res.data?.data || [];
+    const tweets = (res.data?.data || []).filter((t) => !t.text.startsWith('RT @'));
     return tweets.map((t) => {
         const author = usersMap.get(t.author_id);
         return {
@@ -190,8 +196,14 @@ export async function fetchHomeTimelineFeed(maxResults = 20): Promise<Discovered
             createdAt: t.created_at,
             authorName: author?.name || 'User',
             authorUsername: author?.username || 'user',
+            authorAvatar: author?.profile_image_url,
             url: `https://x.com/${author?.username || 'i'}/status/${t.id}`,
             source: 'home' as const,
+            metrics: t.public_metrics ? {
+                retweetCount: t.public_metrics.retweet_count,
+                replyCount: t.public_metrics.reply_count,
+                likeCount: t.public_metrics.like_count,
+            } : undefined,
         };
     });
 }
@@ -205,22 +217,22 @@ export async function searchRelevantTweets(
     maxResults = 20
 ): Promise<DiscoveredTweet[]> {
     const client = getTwitterClient();
-    const query =
-        customQuery && customQuery.trim()
-            ? `${customQuery.trim()} -is:retweet -is:reply lang:en`
-            : '(reading OR "short story" OR "essay" OR "poetry" OR "currently reading" OR "favorite book") -is:retweet -is:reply lang:en';
+    const cleanQuery = customQuery && customQuery.trim() ? customQuery.trim() : '';
+    const query = cleanQuery
+        ? `(${cleanQuery}) -is:retweet -is:reply lang:en`
+        : '(reading OR "short story" OR "essay" OR "poetry" OR "currently reading" OR "favorite book") -is:retweet -is:reply lang:en';
 
     const res = await client.v2.search(query, {
         max_results: Math.min(Math.max(maxResults, 10), 50),
-        'tweet.fields': ['created_at', 'author_id', 'text', 'conversation_id'],
+        'tweet.fields': ['created_at', 'author_id', 'text', 'conversation_id', 'public_metrics'],
         expansions: ['author_id'],
-        'user.fields': ['name', 'username'],
+        'user.fields': ['name', 'username', 'profile_image_url'],
     });
 
     const usersMap = new Map();
     res.includes?.users?.forEach((u) => usersMap.set(u.id, u));
 
-    const tweets = res.data?.data || [];
+    const tweets = (res.data?.data || []).filter((t) => !t.text.startsWith('RT @'));
     return tweets.map((t) => {
         const author = usersMap.get(t.author_id);
         return {
@@ -229,8 +241,14 @@ export async function searchRelevantTweets(
             createdAt: t.created_at,
             authorName: author?.name || 'User',
             authorUsername: author?.username || 'user',
+            authorAvatar: author?.profile_image_url,
             url: `https://x.com/${author?.username || 'i'}/status/${t.id}`,
             source: 'search' as const,
+            metrics: t.public_metrics ? {
+                retweetCount: t.public_metrics.retweet_count,
+                replyCount: t.public_metrics.reply_count,
+                likeCount: t.public_metrics.like_count,
+            } : undefined,
         };
     });
 }

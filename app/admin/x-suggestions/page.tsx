@@ -34,6 +34,12 @@ import {
     Search,
     Compass,
     Users,
+    Heart,
+    Repeat,
+    MessageCircle,
+    EyeOff,
+    Share2,
+    CornerDownRight,
 } from 'lucide-react';
 
 interface VoiceTraits {
@@ -117,8 +123,61 @@ interface DiscoveredTweet {
     createdAt?: string;
     authorName: string;
     authorUsername: string;
+    authorAvatar?: string;
     url: string;
     source: 'home' | 'search';
+    metrics?: {
+        retweetCount?: number;
+        replyCount?: number;
+        likeCount?: number;
+    };
+}
+
+interface InlineDraftState {
+    text: string;
+    suggestionId?: string;
+    isGenerating?: boolean;
+    isPosting?: boolean;
+    isPosted?: boolean;
+    postedTweetId?: string;
+    error?: string;
+    selectedAngle?: string;
+    voiceMatchScore?: number;
+}
+
+const ANGLE_PRESETS = [
+    { id: 'insight', label: '💡 Insightful Take', prompt: 'Offer an insightful, authentic perspective or reflection connected to human nature, reading, or thought.' },
+    { id: 'question', label: '❓ Thoughtful Question', prompt: 'Ask a thoughtful, sincere Socratic question that sparks natural, friendly discussion.' },
+    { id: 'bradbury', label: '📚 Bradbury / Routine', prompt: 'Connect to the Ray Bradbury ritual (story, poem, essay/idea) or the art of a daily reading pause.' },
+    { id: 'nuance', label: '🤝 Warm Nuance', prompt: 'Express warm agreement while adding a unique, personal nuance or detail from life.' },
+];
+
+const CURATED_TOPICS = [
+    { label: '📖 Short Stories & Reading', query: 'reading OR "short story" OR "daily reading"' },
+    { label: '🚀 Ray Bradbury & Routine', query: '"Ray Bradbury" OR "reading habit" OR "creative routine"' },
+    { label: '🏛️ Philosophy & Stoics', query: 'philosophy OR stoicism OR "Marcus Aurelius" OR Seneca' },
+    { label: '✍️ Writing & Essays', query: 'essay OR "literary fiction" OR classics OR poetry' },
+    { label: '☕ Book Discussions', query: '"currently reading" OR "favorite book" OR "book recommendation"' },
+];
+
+function formatRelativeTime(dateStr?: string): string {
+    if (!dateStr) return '';
+    try {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        if (diffMs < 0) return 'just now';
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h`;
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 7) return `${diffDays}d`;
+        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch {
+        return '';
+    }
 }
 
 interface SyncStats {
@@ -167,6 +226,12 @@ export default function XSuggestionsAdmin() {
     const [feedTweets, setFeedTweets] = useState<DiscoveredTweet[]>([]);
     const [isLoadingFeed, setIsLoadingFeed] = useState(false);
     const [draftingTweetId, setDraftingTweetId] = useState<string | null>(null);
+
+    // Interactive Inline Feed Drafts & Dismissals
+    const [inlineDrafts, setInlineDrafts] = useState<{ [tweetId: string]: InlineDraftState }>({});
+    const [dismissedTweetIds, setDismissedTweetIds] = useState<string[]>([]);
+    const [feedFilter, setFeedFilter] = useState<'all' | 'with-drafts'>('all');
+    const [copiedTweetId, setCopiedTweetId] = useState<string | null>(null);
 
     // Load initial data
     useEffect(() => {
@@ -341,11 +406,25 @@ export default function XSuggestionsAdmin() {
         }
     };
 
-    // Direct 1-click comment drafting from discovered feed tweet
-    const handleDraftReplyFromFeed = async (tweet: DiscoveredTweet) => {
+    // Direct inline comment drafting from discovered feed tweet with optional angle
+    const handleDraftReplyInline = async (tweet: DiscoveredTweet, anglePrompt?: string, angleLabel?: string) => {
         setDraftingTweetId(tweet.id);
-        setStatusMessage(null);
+        setInlineDrafts((prev) => ({
+            ...prev,
+            [tweet.id]: {
+                text: prev[tweet.id]?.text || '',
+                suggestionId: prev[tweet.id]?.suggestionId,
+                isGenerating: true,
+                selectedAngle: angleLabel || 'Natural Voice',
+                error: undefined,
+            },
+        }));
+
         try {
+            const contextInstruction = anglePrompt
+                ? `Specific Tone/Angle to take: ${anglePrompt}`
+                : undefined;
+
             const res = await fetch('/api/admin/x-voice/suggestions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -353,30 +432,118 @@ export default function XSuggestionsAdmin() {
                     type: 'comment',
                     slot: 'manual',
                     targetTweetInput: tweet.url,
+                    customContext: contextInstruction,
                     readingStreak: currentStreak,
                 }),
             });
+
             const data = await res.json();
             if (data.success && data.suggestion) {
+                // Record in suggestions list
                 setSuggestions((prev) => [data.suggestion, ...prev]);
                 setEditedTexts((prev) => ({
                     ...prev,
                     [data.suggestion._id]: data.suggestion.suggestedText,
                 }));
-                setStatusMessage({
-                    type: 'success',
-                    text: `Drafted reply to @${tweet.authorUsername}! Ready for review below.`,
-                });
-                setMainView('copilot');
-                setActiveTab('pending');
+                setInlineDrafts((prev) => ({
+                    ...prev,
+                    [tweet.id]: {
+                        text: data.suggestion.suggestedText,
+                        suggestionId: data.suggestion._id,
+                        isGenerating: false,
+                        voiceMatchScore: data.suggestion.evaluation?.voiceMatchScore || 94,
+                        selectedAngle: angleLabel || 'Natural Voice',
+                    },
+                }));
             } else {
                 throw new Error(data.error || 'Failed to draft reply');
             }
         } catch (err: any) {
-            setStatusMessage({ type: 'error', text: err.message });
+            setInlineDrafts((prev) => ({
+                ...prev,
+                [tweet.id]: {
+                    ...prev[tweet.id],
+                    isGenerating: false,
+                    error: err.message,
+                },
+            }));
         } finally {
             setDraftingTweetId(null);
         }
+    };
+
+    // Direct 1-click publishing of an inline draft to X
+    const handlePostInlineReply = async (tweet: DiscoveredTweet) => {
+        const draft = inlineDrafts[tweet.id];
+        if (!draft || !draft.text.trim()) return;
+
+        setInlineDrafts((prev) => ({
+            ...prev,
+            [tweet.id]: {
+                ...prev[tweet.id],
+                isPosting: true,
+                error: undefined,
+            },
+        }));
+
+        try {
+            const res = await fetch('/api/admin/x-voice/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    suggestionId: draft.suggestionId,
+                    text: draft.text,
+                    inReplyToTweetId: tweet.id,
+                }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setInlineDrafts((prev) => ({
+                    ...prev,
+                    [tweet.id]: {
+                        ...prev[tweet.id],
+                        isPosting: false,
+                        isPosted: true,
+                        postedTweetId: data.tweetId,
+                    },
+                }));
+                if (draft.suggestionId) {
+                    setSuggestions((prev) =>
+                        prev.map((s) =>
+                            s._id === draft.suggestionId
+                                ? {
+                                      ...s,
+                                      status: 'posted',
+                                      finalText: draft.text,
+                                      postedTweetId: data.tweetId,
+                                      postedAt: new Date().toISOString(),
+                                  }
+                                : s
+                        )
+                    );
+                }
+                setStatusMessage({
+                    type: 'success',
+                    text: `Published reply to @${tweet.authorUsername} on X! Your learning loop recorded this interaction.`,
+                });
+            } else {
+                throw new Error(data.error || 'Failed to post reply to X');
+            }
+        } catch (err: any) {
+            setInlineDrafts((prev) => ({
+                ...prev,
+                [tweet.id]: {
+                    ...prev[tweet.id],
+                    isPosting: false,
+                    error: err.message,
+                },
+            }));
+        }
+    };
+
+    const handleDismissTweet = (tweetId: string) => {
+        setDismissedTweetIds((prev) => [...prev, tweetId]);
     };
 
     // Post approved draft to X (via official API) & feed back into learning loop
@@ -1145,13 +1312,19 @@ export default function XSuggestionsAdmin() {
             {/* VIEW 2: DISCOVER & COMMENT FEED */}
             {mainView === 'discover' && (
                 <div className="space-y-6 animate-in fade-in duration-200">
-                    <Card className="border-border/60 bg-muted/20">
+                    {/* Feed Controls Header */}
+                    <Card className="border-border/60 bg-muted/20 backdrop-blur shadow-sm">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center justify-between flex-wrap gap-2">
-                                <span className="flex items-center gap-2">
-                                    <Compass className="h-5 w-5 text-sky-500" />
-                                    Find People & Conversations to Comment On
-                                </span>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <CardTitle className="text-base md:text-lg flex items-center gap-2">
+                                        <Compass className="h-5 w-5 text-sky-500" />
+                                        Find People & Conversations to Comment On
+                                    </CardTitle>
+                                    <CardDescription className="text-xs">
+                                        Browse recent posts, click any angle to draft authentic peer replies inline, and publish directly to X with 1-click.
+                                    </CardDescription>
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <Button
                                         variant={feedSource === 'home' ? 'default' : 'outline'}
@@ -1160,10 +1333,10 @@ export default function XSuggestionsAdmin() {
                                             setFeedSource('home');
                                             loadFeedTweets('home');
                                         }}
-                                        className="text-xs"
+                                        className="text-xs h-8"
                                     >
                                         <Users className="mr-1.5 h-3.5 w-3.5" />
-                                        Home Feed (People You Follow)
+                                        Home Feed
                                     </Button>
                                     <Button
                                         variant={feedSource === 'search' ? 'default' : 'outline'}
@@ -1172,143 +1345,426 @@ export default function XSuggestionsAdmin() {
                                             setFeedSource('search');
                                             loadFeedTweets('search', feedQuery);
                                         }}
-                                        className="text-xs"
+                                        className="text-xs h-8"
                                     >
                                         <Search className="mr-1.5 h-3.5 w-3.5" />
-                                        Literature & Reading Discussions
+                                        Literature & Discussions
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => loadFeedTweets(feedSource, feedQuery)}
+                                        disabled={isLoadingFeed}
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                        title="Refresh Feed"
+                                    >
+                                        <RefreshCw className={`h-4 w-4 ${isLoadingFeed ? 'animate-spin' : ''}`} />
                                     </Button>
                                 </div>
-                            </CardTitle>
-                            <CardDescription className="text-xs">
-                                Discover posts in your niche, click "Draft Reply in My Voice" to craft authentic peer responses with your copilot, and grow your audience organically.
-                            </CardDescription>
+                            </div>
                         </CardHeader>
 
-                        {/* Search & Topic Filter bar */}
-                        {feedSource === 'search' && (
-                            <CardContent className="pt-0 space-y-3">
+                        {/* Search & Topic Filters */}
+                        <CardContent className="pt-0 space-y-3">
+                            {feedSource === 'search' && (
                                 <div className="flex gap-2">
-                                    <Input
-                                        placeholder='Search X for discussions (e.g. "favorite short story", "reading habit", "essay")'
-                                        value={feedQuery}
-                                        onChange={(e) => setFeedQuery(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') loadFeedTweets('search', feedQuery);
-                                        }}
-                                        className="text-xs bg-background/80"
-                                    />
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                                        <Input
+                                            placeholder='Search X (e.g. "short story", "reading habit", "essay", "favorite book")'
+                                            value={feedQuery}
+                                            onChange={(e) => setFeedQuery(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') loadFeedTweets('search', feedQuery);
+                                            }}
+                                            className="text-xs pl-8 pr-8 bg-background/80"
+                                        />
+                                        {feedQuery && (
+                                            <button
+                                                onClick={() => {
+                                                    setFeedQuery('');
+                                                    loadFeedTweets('search', '');
+                                                }}
+                                                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
                                     <Button
                                         onClick={() => loadFeedTweets('search', feedQuery)}
                                         disabled={isLoadingFeed}
                                         size="sm"
-                                        className="text-xs shrink-0"
+                                        className="text-xs shrink-0 h-9"
                                     >
-                                        {isLoadingFeed ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                                        {isLoadingFeed ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5 mr-1" />}
                                         Search
                                     </Button>
                                 </div>
-                                <div className="flex flex-wrap gap-1.5 text-xs">
-                                    <span className="text-muted-foreground text-[11px] self-center">Quick topics:</span>
+                            )}
+
+                            {/* Curated Topic Chips */}
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                <span className="text-[11px] font-medium text-muted-foreground mr-1">Curated:</span>
+                                {CURATED_TOPICS.map((topic) => (
                                     <button
+                                        key={topic.label}
                                         onClick={() => {
-                                            setFeedQuery('reading OR "short story" OR "daily reading"');
-                                            loadFeedTweets('search', 'reading OR "short story" OR "daily reading"');
+                                            setFeedSource('search');
+                                            setFeedQuery(topic.query);
+                                            loadFeedTweets('search', topic.query);
                                         }}
-                                        className="px-2 py-0.5 rounded-full bg-background border border-border hover:bg-muted text-[11px]"
+                                        className="px-2.5 py-1 rounded-full bg-background border border-border/80 hover:border-sky-500/50 hover:bg-sky-500/5 text-[11px] transition-colors"
                                     >
-                                        Short Stories & Reading
+                                        {topic.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* View Filter: All vs Drafted */}
+                            <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setFeedFilter('all')}
+                                        className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                                            feedFilter === 'all'
+                                                ? 'bg-foreground/10 text-foreground font-medium'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        All Posts ({feedTweets.filter((t) => !dismissedTweetIds.includes(t.id)).length})
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            setFeedQuery('"favorite book" OR "currently reading"');
-                                            loadFeedTweets('search', '"favorite book" OR "currently reading"');
-                                        }}
-                                        className="px-2 py-0.5 rounded-full bg-background border border-border hover:bg-muted text-[11px]"
+                                        onClick={() => setFeedFilter('with-drafts')}
+                                        className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                                            feedFilter === 'with-drafts'
+                                                ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 font-medium'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        }`}
                                     >
-                                        Currently Reading
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setFeedQuery('poetry OR essay OR "literary fiction"');
-                                            loadFeedTweets('search', 'poetry OR essay OR "literary fiction"');
-                                        }}
-                                        className="px-2 py-0.5 rounded-full bg-background border border-border hover:bg-muted text-[11px]"
-                                    >
-                                        Poetry & Essays
+                                        With Drafts ({feedTweets.filter((t) => inlineDrafts[t.id]?.text).length})
                                     </button>
                                 </div>
-                            </CardContent>
-                        )}
+                                {dismissedTweetIds.length > 0 && (
+                                    <button
+                                        onClick={() => setDismissedTweetIds([])}
+                                        className="text-[11px] text-muted-foreground hover:underline"
+                                    >
+                                        Unhide {dismissedTweetIds.length} hidden posts
+                                    </button>
+                                )}
+                            </div>
+                        </CardContent>
                     </Card>
 
-                    {/* Discovered Tweets Feed */}
+                    {/* Feed Tweets List */}
                     {isLoadingFeed ? (
-                        <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                        <div className="flex flex-col items-center justify-center py-20 space-y-3">
                             <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
-                            <p className="text-xs text-muted-foreground">Reading live X feed...</p>
+                            <p className="text-xs text-muted-foreground">Fetching authentic X timeline discussions...</p>
                         </div>
-                    ) : feedTweets.length === 0 ? (
-                        <div className="text-center py-12 border border-dashed border-border/60 rounded-xl bg-muted/10">
-                            <p className="text-sm text-muted-foreground">
-                                No tweets found for this search. Try a different topic or switch to "Home Feed".
+                    ) : feedTweets.filter((t) => !dismissedTweetIds.includes(t.id)).length === 0 ? (
+                        <div className="text-center py-16 border border-dashed border-border/60 rounded-xl bg-muted/10 space-y-2">
+                            <Compass className="h-8 w-8 text-muted-foreground/50 mx-auto" />
+                            <p className="text-sm font-medium text-foreground">No posts found</p>
+                            <p className="text-xs text-muted-foreground">
+                                Try choosing a different topic chip above or switch between Home Feed and Literature Discussions.
                             </p>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {feedTweets.map((tweet) => {
-                                const isDraftingThis = draftingTweetId === tweet.id;
-                                return (
-                                    <Card key={tweet.id} className="border-border/60 bg-background/60 hover:border-sky-500/40 transition-all">
-                                        <CardContent className="p-4 sm:p-5 space-y-3">
-                                            {/* Author header */}
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex items-center gap-2 text-xs">
-                                                    <span className="font-semibold text-foreground">{tweet.authorName}</span>
-                                                    <span className="text-muted-foreground">@{tweet.authorUsername}</span>
-                                                    {tweet.createdAt && (
-                                                        <span className="text-muted-foreground text-[11px]">
-                                                            • {new Date(tweet.createdAt).toLocaleDateString()}
-                                                        </span>
-                                                    )}
+                            {feedTweets
+                                .filter((tweet) => {
+                                    if (dismissedTweetIds.includes(tweet.id)) return false;
+                                    if (feedFilter === 'with-drafts' && !inlineDrafts[tweet.id]?.text) return false;
+                                    return true;
+                                })
+                                .map((tweet) => {
+                                    const draft = inlineDrafts[tweet.id];
+                                    const isDrafting = draft?.isGenerating;
+                                    const hasDraft = Boolean(draft?.text);
+                                    const isPosted = draft?.isPosted;
+                                    const charCount = (draft?.text || '').length;
+                                    const isOverLimit = charCount > 280;
+
+                                    return (
+                                        <Card
+                                            key={tweet.id}
+                                            className={`border transition-all duration-200 rounded-xl shadow-sm ${
+                                                hasDraft
+                                                    ? 'border-purple-500/40 bg-card'
+                                                    : 'border-border/60 bg-card/60 hover:border-border hover:bg-card/90'
+                                            }`}
+                                        >
+                                            <CardContent className="p-4 sm:p-5 space-y-3.5">
+                                                {/* Author Header */}
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="flex items-center gap-3">
+                                                        {tweet.authorAvatar ? (
+                                                            <img
+                                                                src={tweet.authorAvatar}
+                                                                alt={tweet.authorName}
+                                                                className="h-10 w-10 rounded-full object-cover border border-border/60 shrink-0"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-sky-500/20 to-purple-500/20 border border-sky-500/30 flex items-center justify-center font-bold text-sky-400 text-sm shrink-0">
+                                                                {tweet.authorName.charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                <span className="font-semibold text-sm text-foreground hover:underline cursor-pointer">
+                                                                    {tweet.authorName}
+                                                                </span>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    @{tweet.authorUsername}
+                                                                </span>
+                                                                <span className="text-muted-foreground/60 text-xs">·</span>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {formatRelativeTime(tweet.createdAt)}
+                                                                </span>
+                                                            </div>
+                                                            <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground mt-0.5">
+                                                                {tweet.source === 'home' ? 'Following' : 'Discovered in Literature'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Top right actions */}
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <a
+                                                            href={tweet.url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="text-muted-foreground hover:text-sky-500 p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+                                                            title="View on X"
+                                                        >
+                                                            <ExternalLink className="h-4 w-4" />
+                                                        </a>
+                                                        <button
+                                                            onClick={() => handleDismissTweet(tweet.id)}
+                                                            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+                                                            title="Hide from feed"
+                                                        >
+                                                            <EyeOff className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <a
-                                                    href={tweet.url}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="text-xs text-sky-500 hover:underline flex items-center gap-1"
-                                                >
-                                                    View on X <ExternalLink className="h-3 w-3" />
-                                                </a>
-                                            </div>
 
-                                            {/* Tweet Content */}
-                                            <p className="text-sm font-serif leading-relaxed text-foreground whitespace-pre-wrap">
-                                                {tweet.text}
-                                            </p>
+                                                {/* Tweet Body */}
+                                                <p className="text-[15px] leading-relaxed text-foreground font-sans whitespace-pre-wrap selection:bg-sky-500/20">
+                                                    {tweet.text}
+                                                </p>
 
-                                            {/* Action bar */}
-                                            <div className="pt-2 border-t border-border/30 flex items-center justify-between">
-                                                <span className="text-[11px] text-muted-foreground">
-                                                    {tweet.source === 'home' ? 'From your home feed' : 'Discovered in literary search'}
-                                                </span>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => handleDraftReplyFromFeed(tweet)}
-                                                    disabled={isDraftingThis}
-                                                    className="text-xs bg-purple-600 hover:bg-purple-500 text-white font-medium"
-                                                >
-                                                    {isDraftingThis ? (
-                                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                                                    ) : (
-                                                        <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
-                                                    )}
-                                                    Draft Reply in My Voice
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
+                                                {/* Tweet Public Metrics */}
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/30">
+                                                    <div className="flex items-center gap-4">
+                                                        <span className="flex items-center gap-1 hover:text-foreground transition-colors">
+                                                            <MessageCircle className="h-3.5 w-3.5" />
+                                                            {tweet.metrics?.replyCount ?? 0}
+                                                        </span>
+                                                        <span className="flex items-center gap-1 hover:text-foreground transition-colors">
+                                                            <Repeat className="h-3.5 w-3.5" />
+                                                            {tweet.metrics?.retweetCount ?? 0}
+                                                        </span>
+                                                        <span className="flex items-center gap-1 hover:text-foreground transition-colors">
+                                                            <Heart className="h-3.5 w-3.5" />
+                                                            {tweet.metrics?.likeCount ?? 0}
+                                                        </span>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(tweet.url);
+                                                            setCopiedTweetId(tweet.id);
+                                                            setTimeout(() => setCopiedTweetId(null), 2000);
+                                                        }}
+                                                        className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                                                    >
+                                                        {copiedTweetId === tweet.id ? (
+                                                            <>
+                                                                <Check className="h-3 w-3 text-emerald-500" /> Copied Link
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Share2 className="h-3 w-3" /> Copy Link
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+
+                                                {/* Quick Angles & Action Bar */}
+                                                {!hasDraft && !isDrafting && (
+                                                    <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                                            <span className="text-[11px] text-muted-foreground">Draft with lens:</span>
+                                                            {ANGLE_PRESETS.map((preset) => (
+                                                                <button
+                                                                    key={preset.id}
+                                                                    onClick={() => handleDraftReplyInline(tweet, preset.prompt, preset.label)}
+                                                                    className="px-2 py-0.5 rounded-full bg-muted/60 hover:bg-muted text-[11px] text-muted-foreground hover:text-foreground border border-border/40 transition-colors"
+                                                                >
+                                                                    {preset.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleDraftReplyInline(tweet)}
+                                                            className="text-xs bg-gradient-to-r from-purple-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white font-medium shadow-sm h-8"
+                                                        >
+                                                            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                                                            Draft Reply in My Voice
+                                                        </Button>
+                                                    </div>
+                                                )}
+
+                                                {/* Loading State for Inline Draft */}
+                                                {isDrafting && (
+                                                    <div className="p-4 rounded-xl border border-purple-500/20 bg-purple-500/5 flex items-center justify-center gap-3 animate-in fade-in duration-200">
+                                                        <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
+                                                        <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                                                            Drafting authentic reply with DeepSeek in your personal voice...
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {/* Interactive Inline Workbench Drawer */}
+                                                {hasDraft && !isDrafting && (
+                                                    <div className="p-4 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                                                        <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 font-semibold text-[11px] flex items-center gap-1">
+                                                                    <Sparkles className="h-3 w-3" />
+                                                                    {draft.voiceMatchScore || 94}% Authentic Match
+                                                                </span>
+                                                                {draft.selectedAngle && (
+                                                                    <span className="text-muted-foreground text-[11px]">
+                                                                        Lens: <strong>{draft.selectedAngle}</strong>
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <span
+                                                                className={`font-mono text-xs px-2 py-0.5 rounded-full ${
+                                                                    isOverLimit
+                                                                        ? 'bg-destructive/10 text-destructive font-bold animate-pulse'
+                                                                        : charCount > 250
+                                                                        ? 'bg-amber-500/10 text-amber-600 font-medium'
+                                                                        : 'bg-muted text-muted-foreground'
+                                                                }`}
+                                                            >
+                                                                {charCount} / 280
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Editable Text Area */}
+                                                        <Textarea
+                                                            value={draft.text}
+                                                            onChange={(e) =>
+                                                                setInlineDrafts((prev) => ({
+                                                                    ...prev,
+                                                                    [tweet.id]: {
+                                                                        ...prev[tweet.id],
+                                                                        text: e.target.value,
+                                                                    },
+                                                                }))
+                                                            }
+                                                            disabled={isPosted || draft.isPosting}
+                                                            className="w-full p-3 bg-background text-sm leading-relaxed rounded-lg border border-border/80 focus:border-purple-500/50 resize-y min-h-[85px]"
+                                                            placeholder="Edit your authentic reply..."
+                                                        />
+
+                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                                                            {/* Re-draft with angle buttons */}
+                                                            {!isPosted && (
+                                                                <div className="flex items-center gap-1 flex-wrap">
+                                                                    <span className="text-[10px] text-muted-foreground mr-1">Switch angle:</span>
+                                                                    {ANGLE_PRESETS.map((preset) => (
+                                                                        <button
+                                                                            key={preset.id}
+                                                                            onClick={() => handleDraftReplyInline(tweet, preset.prompt, preset.label)}
+                                                                            className="px-1.5 py-0.5 rounded bg-background/80 hover:bg-muted text-[10px] border border-border/50 text-muted-foreground hover:text-foreground transition-colors"
+                                                                        >
+                                                                            {preset.label.split(' ')[0]} {preset.label.split(' ')[1]}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Action buttons */}
+                                                            <div className="flex items-center gap-2 ml-auto">
+                                                                {isPosted ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                                                                            <Check className="h-3.5 w-3.5" /> Published to X!
+                                                                        </span>
+                                                                        <a
+                                                                            href={tweet.url}
+                                                                            target="_blank"
+                                                                            rel="noreferrer"
+                                                                            className="text-xs text-sky-500 hover:underline flex items-center gap-1"
+                                                                        >
+                                                                            View on X <ExternalLink className="h-3 w-3" />
+                                                                        </a>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                setInlineDrafts((prev) => {
+                                                                                    const copy = { ...prev };
+                                                                                    delete copy[tweet.id];
+                                                                                    return copy;
+                                                                                })
+                                                                            }
+                                                                            className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                                                                        >
+                                                                            Discard
+                                                                        </Button>
+
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                navigator.clipboard.writeText(draft.text);
+                                                                                setStatusMessage({
+                                                                                    type: 'success',
+                                                                                    text: 'Reply copied to clipboard!',
+                                                                                });
+                                                                            }}
+                                                                            className="h-8 text-xs"
+                                                                        >
+                                                                            <Copy className="h-3.5 w-3.5 mr-1" />
+                                                                            Copy
+                                                                        </Button>
+
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={() => handlePostInlineReply(tweet)}
+                                                                            disabled={draft.isPosting || isOverLimit || !draft.text.trim()}
+                                                                            className="h-8 text-xs bg-sky-600 hover:bg-sky-500 text-white font-medium"
+                                                                        >
+                                                                            {draft.isPosting ? (
+                                                                                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                                                            ) : (
+                                                                                <Send className="mr-1.5 h-3.5 w-3.5" />
+                                                                            )}
+                                                                            Post to X (Official API)
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
                         </div>
                     )}
                 </div>
