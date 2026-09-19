@@ -125,7 +125,7 @@ export default function Impressum() {
                             Hinweis zu literarischen Inhalten
                         </h4>
                         <p className="text-xs">
-                            Die auf dieser Website bereitgestellten literarischen Texte (Kurzgeschichten, Gedichte, Essays) stammen ausschließlich aus dem <strong>Public Domain (Gemeinfreiheit)</strong>. Wir erheben keine urheberrechtlichen Ansprüche auf diese Originalwerke.
+                            Die auf dieser Website bereitgestellten literarischen Texte (Kurzgeschichten, Gedichte, Essays und Zitate) stammen ausschließlich aus dem <strong>Public Domain (Gemeinfreiheit)</strong>. Wir erheben keine urheberrechtlichen Ansprüche auf diese Originalwerke.
                         </p>
                         <p className="text-xs">
                             <strong>KI-generierte Metadaten:</strong> Bei historischen Werken können Metadaten (z.B. Autor, Entstehungsjahr) teilweise unvollständig sein. In diesen Fällen werden Zuordnungen mithilfe von KI-gestützten Verfahren <em>angenommen</em>. Wir übernehmen keine Gewähr für die absolute Korrektheit dieser Zuordnungen.

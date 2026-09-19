@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Target word count is 4000 words (~20 minutes of reading time at 200 words/minute)
-        const TARGET_WORDS = 4000;
+        // Target word count is ~1800 words (calibrated for a mindful 15-20 minute lunch break)
+        const TARGET_WORDS = 1800;
 
         const fetchPool = async (type: ContentType) => {
             const matchStage: any = { type };
@@ -53,36 +53,39 @@ export async function GET(request: NextRequest) {
 
         const stories = await fetchPool('short_story');
         const poems = await fetchPool('poem');
-        const essays = await fetchPool('essay');
+        let ideas = await fetchPool('idea');
+        if (ideas.length === 0) {
+            ideas = await fetchPool('quote');
+        }
 
         const results = [];
 
-        if (stories.length > 0 && poems.length > 0 && essays.length > 0) {
+        if (stories.length > 0 && poems.length > 0 && ideas.length > 0) {
             let bestCombo: any[] = [];
             let closestDiff = Infinity;
 
             for (const story of stories) {
-                const sWords = story.estimatedWords || (story.content ? story.content.split(/\s+/).length : 2000);
+                const sWords = story.estimatedWords || (story.content ? story.content.split(/\s+/).length : 1500);
                 for (const poem of poems) {
                     const pWords = poem.estimatedWords || (poem.content ? poem.content.split(/\s+/).length : 150);
-                    for (const essay of essays) {
-                        const eWords = essay.estimatedWords || (essay.content ? essay.content.split(/\s+/).length : 1500);
+                    for (const idea of ideas) {
+                        const iWords = idea.estimatedWords || (idea.content ? idea.content.split(/\s+/).length : 50);
 
-                        const totalWords = sWords + pWords + eWords;
+                        const totalWords = sWords + pWords + iWords;
                         const diff = Math.abs(totalWords - TARGET_WORDS);
 
                         if (diff < closestDiff) {
                             closestDiff = diff;
-                            bestCombo = [story, poem, essay];
+                            bestCombo = [story, poem, idea];
                         }
                     }
                 }
             }
             results.push(...bestCombo);
-            console.log(`✓ Selected optimal 20-min combination (Diff: ${closestDiff} words from target)`);
+            console.log(`✓ Selected optimal 20-min combination (Story + Poem + Idea, Diff: ${closestDiff} words from target)`);
         } else {
             // Fallback: simple standalone queries if any pool is empty
-            const types: ContentType[] = ['short_story', 'poem', 'essay'];
+            const types: ContentType[] = ['short_story', 'poem', 'idea'];
             for (const type of types) {
                 const matchStage: any = { type };
                 if (theme) matchStage.theme = theme;

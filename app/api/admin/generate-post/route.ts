@@ -58,11 +58,11 @@ export async function POST(req: Request) {
         - Preserve line breaks.
 
         Canonical Structure:
-        Day ${day} — Bradbury Method
+        Day ${day} — Daily Reads Ritual
 
-        Poem: "{Title}" — {Author}
-        Essay: "{Title}" — {Author}
         Story: "{Title}" — {Author}
+        Poem: "{Title}" — {Author}
+        Idea: "{Title}" — {Author}
 
         [Closing Sentence]
 

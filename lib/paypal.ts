@@ -1,19 +1,40 @@
 import fs from 'fs';
 import path from 'path';
 
-const PAYPAL_API = 'https://api-m.sandbox.paypal.com';
+const PAYPAL_API = process.env.PAYPAL_MODE === 'live' 
+    ? 'https://api-m.paypal.com' 
+    : 'https://api-m.sandbox.paypal.com';
 const CACHE_FILE = path.join(process.cwd(), 'lib', 'paypal_cache.json');
 
-interface PayPalCache {
+interface PayPalCacheEntry {
     productId?: string;
     planId?: string;
 }
 
-function readCache(): PayPalCache {
+interface PayPalCache {
+    sandbox?: PayPalCacheEntry;
+    live?: PayPalCacheEntry;
+    // Legacy fallback
+    productId?: string;
+    planId?: string;
+}
+
+function getModeKey(): 'live' | 'sandbox' {
+    return process.env.PAYPAL_MODE === 'live' ? 'live' : 'sandbox';
+}
+
+function readCache(): PayPalCacheEntry {
     try {
         if (fs.existsSync(CACHE_FILE)) {
-            const data = fs.readFileSync(CACHE_FILE, 'utf8');
-            return JSON.parse(data);
+            const data: PayPalCache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+            const mode = getModeKey();
+            if (data[mode]) {
+                return data[mode]!;
+            }
+            // Fallback for legacy flat cache if in sandbox
+            if (mode === 'sandbox' && (data.productId || data.planId)) {
+                return { productId: data.productId, planId: data.planId };
+            }
         }
     } catch (error) {
         console.error('Error reading PayPal cache file:', error);
@@ -21,9 +42,15 @@ function readCache(): PayPalCache {
     return {};
 }
 
-function writeCache(data: PayPalCache) {
+function writeCache(entry: PayPalCacheEntry) {
     try {
-        fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
+        let fullCache: PayPalCache = {};
+        if (fs.existsSync(CACHE_FILE)) {
+            fullCache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+        }
+        const mode = getModeKey();
+        fullCache[mode] = { ...fullCache[mode], ...entry };
+        fs.writeFileSync(CACHE_FILE, JSON.stringify(fullCache, null, 2), 'utf8');
     } catch (error) {
         console.error('Error writing PayPal cache file:', error);
     }

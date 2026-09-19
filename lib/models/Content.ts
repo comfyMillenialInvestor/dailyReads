@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
-export type ContentType = 'short_story' | 'poem' | 'essay';
+export type ContentType = 'short_story' | 'poem' | 'idea' | 'essay' | 'quote';
 
 export const VALID_THEMES = [
     'philosophy',
@@ -21,6 +21,8 @@ export type Theme = (typeof VALID_THEMES)[number] | 'more';
 
 export interface IContent extends Document {
     type: ContentType;
+    subType?: 'quote' | 'micro_essay' | string;
+    originalType?: string;
     theme: Theme;
     title: string;
     author: string;
@@ -47,8 +49,10 @@ const ContentSchema: Schema = new Schema(
         type: {
             type: String,
             required: true,
-            enum: ['short_story', 'poem', 'essay'],
+            enum: ['short_story', 'poem', 'idea', 'essay', 'quote'],
         },
+        subType: { type: String },
+        originalType: { type: String },
         theme: {
             type: String,
             required: true,

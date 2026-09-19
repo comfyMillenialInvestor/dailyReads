@@ -474,7 +474,7 @@ Tomorrow we start week ${nextWeek}.`;
                             </Button>
                         </CardTitle>
                         <CardDescription>
-                            DeepSeek extracts memorable, lyrical, and thought-provoking quotes from the short story, poem, or essay you read today.
+                            DeepSeek extracts memorable, lyrical, and thought-provoking quotes from the short story, poem, or idea you read today.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">

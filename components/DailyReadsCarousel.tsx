@@ -35,6 +35,14 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
     const firedRef = React.useRef(false);
     const { lang, t } = useLanguage();
 
+    const getTypeLabel = React.useCallback((type: string) => {
+        if (type === 'quote' || type === 'idea') return t('carousel.type.idea') || (lang === 'de' ? 'Idee' : 'Idea');
+        if (type === 'short_story') return t('carousel.type.short_story') || (lang === 'de' ? 'Geschichte' : 'Short Story');
+        if (type === 'poem') return t('carousel.type.poem') || (lang === 'de' ? 'Gedicht' : 'Poem');
+        if (type === 'essay') return t('carousel.type.essay') || 'Story';
+        return type.replace('_', ' ');
+    }, [lang, t]);
+
     // Reader Mode States
     const [readerItem, setReaderItem] = React.useState<IContent | null>(null);
     const [readerTextSize, setReaderTextSize] = React.useState<'sm' | 'base' | 'lg' | 'xl' | '2xl'>('lg');
@@ -272,7 +280,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2 mb-2">
                                                     <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
-                                                        {item.type.replace('_', ' ')}
+                                                        {getTypeLabel(item.type)}
                                                     </span>
                                                     <span className="capitalize text-[10px] px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium">
                                                         {item.theme}
@@ -308,13 +316,18 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-hidden relative px-3 md:px-6">
                                         <div className="h-full overflow-y-auto pr-2 font-serif text-foreground/90 leading-relaxed scrollbar-thin scrollbar-thumb-muted">
-                                            <div className={`markdown-content ${item.type === 'poem' ? 'poetry-mode' : 'prose-mode'}`}>
+                                            <div className={`markdown-content ${item.type === 'poem' ? 'poetry-mode' : (item.type === 'quote' || item.type === 'idea') ? 'quote-mode flex flex-col justify-center min-h-[180px]' : 'prose-mode'}`}>
                                                 <ReactMarkdown
                                                     components={{
                                                         p: ({ children }) => (
-                                                            <p className={`${item.type === 'poem' ? 'mb-2' : 'mb-5 md:mb-6 text-left md:text-justify'} text-base md:text-lg leading-relaxed last:mb-0`}>
+                                                            <p className={`${item.type === 'poem' ? 'mb-2' : (item.type === 'quote' || item.type === 'idea') ? 'mb-4 text-left font-serif text-base md:text-lg' : 'mb-5 md:mb-6 text-left md:text-justify'} text-base md:text-lg leading-relaxed last:mb-0`}>
                                                                 {children}
                                                             </p>
+                                                        ),
+                                                        blockquote: ({ children }) => (
+                                                            <blockquote className="border-l-4 border-primary/50 pl-4 md:pl-5 py-2.5 my-3 italic text-base md:text-xl font-serif text-foreground/95 bg-primary/5 rounded-r-lg">
+                                                                {children}
+                                                            </blockquote>
                                                         ),
                                                         em: ({ children }) => <em className="italic opacity-90">{children}</em>,
                                                         strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
@@ -337,7 +350,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                 {index + 1} {t('carousel.of')} {items.length}
                                             </span>
                                             {index < items.length - 1 ? (
-                                                <span className="animate-pulse">{t('carousel.next')}: {items[index + 1].type.replace('_', ' ')} &rarr;</span>
+                                                <span className="animate-pulse">{t('carousel.next')}: {getTypeLabel(items[index + 1].type)} &rarr;</span>
                                             ) : (
                                                 <div className="flex flex-col items-end gap-2">
                                                     {isPaid ? (
@@ -532,7 +545,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                     "inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full",
                                     readerTheme === 'sepia' ? "bg-[#E6DEC9] text-[#5B4636]" : readerTheme === 'dark' ? "bg-zinc-800 text-zinc-300" : "bg-primary/10 text-primary"
                                 )}>
-                                    {readerItem.type.replace('_', ' ')}
+                                    {getTypeLabel(readerItem.type)}
                                 </span>
                                 <h1 className="text-2xl md:text-5xl font-serif font-extrabold tracking-tight leading-tight">
                                     {lang === 'de' && readerItem.title_de ? readerItem.title_de : (readerItem.title_en || readerItem.title)}
@@ -551,14 +564,14 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                             {/* Main story text */}
                             <div className={cn(
                                 "markdown-content prose-lg max-w-none leading-relaxed",
-                                readerItem.type === 'poem' ? 'poetry-mode font-serif pl-2 md:pl-12 italic' : 'prose-mode font-serif'
+                                readerItem.type === 'poem' ? 'poetry-mode font-serif pl-2 md:pl-12 italic' : (readerItem.type === 'quote' || readerItem.type === 'idea') ? 'quote-mode font-serif py-4' : 'prose-mode font-serif'
                             )}>
                                 <ReactMarkdown
                                     components={{
                                         p: ({ children }) => (
                                             <p
                                                 className={cn(
-                                                    readerItem.type === 'poem' ? 'mb-3' : 'mb-6 md:mb-8 text-left md:text-justify',
+                                                    readerItem.type === 'poem' ? 'mb-3' : (readerItem.type === 'quote' || readerItem.type === 'idea') ? 'mb-6 text-left font-serif text-xl md:text-2xl leading-relaxed' : 'mb-6 md:mb-8 text-left md:text-justify',
                                                     readerTextSize === 'sm' && "text-sm md:text-base",
                                                     readerTextSize === 'base' && "text-base md:text-lg",
                                                     readerTextSize === 'lg' && "text-lg md:text-xl",
@@ -568,6 +581,11 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                             >
                                                 {children}
                                             </p>
+                                        ),
+                                        blockquote: ({ children }) => (
+                                            <blockquote className="border-l-4 border-primary/50 pl-6 md:pl-8 py-4 my-6 italic text-xl md:text-3xl font-serif text-foreground/95 bg-primary/5 rounded-r-2xl">
+                                                {children}
+                                            </blockquote>
                                         ),
                                         em: ({ children }) => <em className="italic opacity-90">{children}</em>,
                                         strong: ({ children }) => <strong className="font-bold">{children}</strong>,

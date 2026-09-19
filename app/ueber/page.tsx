@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, PenTool, Quote, Library, Heart, Sparkles, Linkedin, Twitter } from 'lucide-react';
+import { BookOpen, PenTool, Quote, Library, Heart, Sparkles, Linkedin, Twitter, Lightbulb } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function Ueber() {
@@ -40,10 +40,10 @@ export default function Ueber() {
                     </p>
                 </div>
                 <div className="group p-6 md:p-8 bg-muted/30 rounded-2xl border border-border/50 transition-all hover:bg-muted/50 hover:-translate-y-1">
-                    <BookOpen className="h-6 w-6 mb-4 text-primary/60 group-hover:text-primary transition-colors" />
-                    <h3 className="text-lg md:text-xl font-bold mb-3">{t('about.essay.title')}</h3>
+                    <Lightbulb className="h-6 w-6 mb-4 text-primary/60 group-hover:text-primary transition-colors" />
+                    <h3 className="text-lg md:text-xl font-bold mb-3">{t('about.idea.title')}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        {t('about.essay.desc')}
+                        {t('about.idea.desc')}
                     </p>
                 </div>
             </section>

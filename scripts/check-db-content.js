@@ -9,7 +9,7 @@ const COLLECTION_NAME = process.env.COLLECTION_NAME || 'Content';
 
 async function checkDatabase() {
     try {
-        await mongoose.connect(MONGO_URI);
+        await mongoose.connect(MONGO_URI, { dbName: process.env.DB_NAME || 'dailyReads' });
         console.log('Connected to MongoDB\n');
 
         const db = mongoose.connection.db;
@@ -21,7 +21,7 @@ async function checkDatabase() {
         console.log(`Total documents: ${total}\n`);
 
         // Count by type
-        const types = ['short_story', 'poem', 'essay'];
+        const types = ['short_story', 'poem', 'idea'];
         console.log('=== COUNT BY TYPE ===');
         for (const type of types) {
             const count = await collection.countDocuments({ type });
@@ -40,11 +40,10 @@ async function checkDatabase() {
 
         // Check for any documents with incorrect type values
         console.log('\n=== CHECKING FOR INVALID TYPES ===');
-        const allDocs = await collection.find({}).toArray();
-        const invalidTypes = allDocs.filter(doc => !types.includes(doc.type));
-        if (invalidTypes.length > 0) {
-            console.log(`Found ${invalidTypes.length} documents with invalid types:`);
-            invalidTypes.forEach(doc => {
+        const invalidDocs = await collection.find({ type: { $nin: types } }, { projection: { title: 1, type: 1 } }).toArray();
+        if (invalidDocs.length > 0) {
+            console.log(`Found ${invalidDocs.length} documents with invalid types:`);
+            invalidDocs.forEach(doc => {
                 console.log(`- "${doc.title}": type="${doc.type}"`);
             });
         } else {

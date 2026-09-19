@@ -8,8 +8,8 @@ import { Analytics } from '@vercel/analytics/react';
 
 
 export const metadata: Metadata = {
-  title: 'Daily Reads - Story, Poem, Essay',
-  description: 'Your daily dose of literature. Three short texts every day: a short story, a poem, and an essay.',
+  title: 'Daily Reads - Story, Poem, Idea',
+  description: 'Your daily dose of literature and wisdom. Three short texts every day: a short story, a poem, and an idea.',
 };
 
 export default function RootLayout({

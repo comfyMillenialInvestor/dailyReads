@@ -12,7 +12,7 @@ import {
 // FEATURE FLAGS – flip to `true` to enable each provider
 // ──────────────────────────────────────────────────────────
 const STRIPE_ENABLED = false;   // change to true to enable Stripe
-const PAYPAL_ENABLED = false;   // change to true to enable PayPal
+const PAYPAL_ENABLED = true;    // enabled for PayPal subscriptions
 // ──────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {

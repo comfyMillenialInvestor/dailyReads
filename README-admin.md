@@ -32,9 +32,9 @@ Navigate to `/admin/challenge` in your browser.
 
 ### Step 3: Enter the Texts (Bradbury Method)
 Fill in the Title and Author for all three required readings:
-1. **Text 1 (Poem)**: Title & Author
-2. **Text 2 (Essay)**: Title & Author
-3. **Text 3 (Short Story)**: Title & Author
+1. **Text 1 (Short Story)**: Title & Author
+2. **Text 2 (Poem)**: Title & Author
+3. **Text 3 (Idea)**: Title & Author (Quote or Short Concept)
 
 ### Step 4: Choose a Post Pattern
 Select one of the formatting styles to keep posts engaging:

@@ -11,7 +11,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 // FEATURE FLAGS – flip to `true` to enable each provider button
 // ──────────────────────────────────────────────────────────
 const STRIPE_ENABLED = false;   // change to true to enable Stripe
-const PAYPAL_ENABLED = false;   // change to true to enable PayPal
+const PAYPAL_ENABLED = true;    // enabled for PayPal subscriptions
 // ──────────────────────────────────────────────────────────
 
 export default function SubscribePage() {
