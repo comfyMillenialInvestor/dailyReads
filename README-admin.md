@@ -49,3 +49,15 @@ Select one of the formatting styles to keep posts engaging:
 
 ### Step 6: Publish to X
 Click **"Approve & Post to X"** to tweet the log using your configured API keys.
+
+---
+
+## 4. X Personal Voice & Suggestions (`/admin/x-suggestions`)
+
+Navigate to `/admin/x-suggestions` (or click the **"X Voice & Suggestions"** button from the top of `/admin/challenge`) to access the continuous learning AI system:
+
+* **Sync from X**: Reads and categorizes your published standalone posts and conversational replies.
+* **Continuous Voice Profile**: DeepSeek analyzes 20+ linguistic dimensions from your actual writing (sentence length, humor, emojis, directness, "I" usage, etc.). Click **"Learned Traits"** to see what was extracted.
+* **Generate Suggestions**: Click **Morning Post**, **Evening Post**, or **Instant Standalone Post** for on-demand drafts, or use the **Quick Reply Assistant** to draft conversational replies to any tweet.
+* **Review & 1-Click Publish**: Review the draft, check the DeepSeek Voice Match score, edit the text if desired, and click **Approve & Post to X**. Any edits are recorded back into the training data to continuously refine your voice profile!
+

@@ -1,47 +1,89 @@
-# Ray Bradbury Challenge — X Posting Workflow
+# Ray Bradbury Challenge & Personal Voice — X Posting & Continuous Learning
 
-This document explains the workflow for logging daily readings and posting them to X (Twitter) via the Admin Dashboard.
+This document explains the X (Twitter) workflows in DailyReads:
+1. **Ray Bradbury Challenge Logging**: Logging daily reading streaks and formatting posts.
+2. **Personal Voice & Continuous Learning**: Reading actual published posts and replies via the official X API, synthesizing your real personal writing style with DeepSeek, and generating suggestions for posts and comments.
+
+---
 
 ## Prerequisites & Environment Configuration
 
-To use the workflow, ensure the following environment variables are set in your `.env.local` file:
+Ensure the following environment variables are set in your `.env.local` file:
 
 ```env
-# DeepSeek API (for drafting posts)
+# DeepSeek API (for voice learning, suggestion drafting, and voice evaluation)
 DEEPSEEK_API_KEY="your-deepseek-api-key"
 
-# X (Twitter) Developer Portal API Keys
-X_API_KEY="your-api-key"
-X_API_SECRET="your-api-secret"
+# X (Twitter) Developer Portal API Keys (OAuth 1.0a User Context)
+X_CONSUMER_KEY="your-consumer-key"
+X_CONSUMER_KEY_SECRET="your-consumer-key-secret"
 X_ACCESS_TOKEN="your-access-token"
-X_ACCESS_SECRET="your-access-secret"
+X_ACCESS_TOKEN_SECRET="your-access-token-secret"
 ```
 
-## Step-by-Step Workflow
+---
 
-1. **Access the Admin Dashboard**:
-   - Go to `/admin/challenge` in your browser. (Ensure you are logged in so your current reading streak is accessible).
+## Personal Voice & Continuous Learning System (`/admin/x-suggestions`)
 
-2. **Select the Challenge Day**:
-   - The dashboard displays your **Current Reading Streak**.
-   - You can click the **"Use Streak Day"** helper next to the day input field to automatically fill the input with your current streak number.
+### Core Philosophy: My Actual Posts Are the Source of Truth
+The AI does **not** rely on a generic brand persona. Instead:
+- It tracks and stores your **actual published posts and replies** directly from X.
+- Standalone original posts and conversational replies are distinguished.
+- DeepSeek continuously analyzes your writing across 20+ linguistic dimensions (sentence length, humor, irony, understatement, emojis, directness, formality, conversational style, how you agree/disagree, use of "I", typical reply length).
+- **Your actual posts win** over any preconceived notions.
 
-3. **Enter Your Reading List**:
-   - Input the **Title** and **Author** for the three texts required by the Bradbury Method:
-     - Title 1 & Author 1 (Poem)
-     - Title 2 & Author 2 (Essay)
-     - Title 3 & Author 3 (Short Story)
+### Continuous Feedback Loop
+```text
+Your published X posts & replies
+              ↓
+  Sync & analyze with DeepSeek
+              ↓
+    Active Voice Profile
+              ↓
+ Generate suggestions (posts/replies)
+              ↓
+  You review & edit draft in admin
+              ↓
+ Approve & publish to X (Official API)
+              ↓
+  Saved back into training data
+              ↓
+   Voice profile evolves continuously
+```
 
-4. **Choose a Post Pattern**:
-   - To keep posts short, natural, and non-AI-like, select one of the three patterns:
-     - **Austere / Ritual**: Pure record keeping. Ends with *"Read during the midday pause."*
-     - **Atmospheric / Observational**: Ends with a brief sensory/physical observation (e.g., *"Rain on the glass; coffee growing cold."*).
-     - **Resonance / Margin Note**: Ends with a short, cryptic connection or note on the relationship between the pieces (e.g., *"Technology advances, but the wheelbarrow remains."*).
+---
 
-5. **Generate & Review**:
-   - Click **"Generate X Post"**.
-   - A draft will appear in the text area below. Review the text and character count (limit is 280). You can edit the text directly in the box to adjust any phrasing or fix any details.
+## How to Use in the Admin Panel
 
-6. **Post to X**:
-   - Once satisfied, click **"Approve & Post to X"**.
-   - A success message will confirm when the tweet has been successfully published.
+1. **Open the Dashboard**: Navigate to `/admin/x-suggestions` in your browser.
+2. **Sync From X**:
+   - Click the **"Sync from X"** button in the header.
+   - The system retrieves your latest posts and replies, cataloging them into standalone posts and conversational replies.
+3. **Inspect the Learned Voice**:
+   - The dashboard displays your active **Voice Profile version**, analyzed post counts, and streak.
+   - Click **"Learned Traits"** to inspect how DeepSeek characterized your sentence structure, humor, emoji habits, and authentic quotes extracted from your timeline.
+   - Click **"Re-Learn Voice"** anytime you want to refresh the linguistic model.
+4. **Generate Standalone Suggestions (Manual or 2x Daily)**:
+   - **Morning Post**: Generates an early morning observation, reading kickoff, or reflection.
+   - **Evening Post**: Generates a winding-down thought or reading streak reflection.
+   - **Instant Standalone Post**: Immediate post suggestion tailored to your authentic tone.
+5. **Find People & Conversations to Comment On (Growth & Feed)**:
+   - Click the toggle **"Find People & Posts to Comment On"** at the top of the dashboard.
+   - Switch between **"Home Feed"** (see recent tweets from accounts you follow, e.g. authors like `@AuthorGFAllen`) and **"Literature & Reading Discussions"** (discover active conversations on X about books, short stories, essays, and reading habits).
+   - Click **"Draft Reply in My Voice"** on any discovered tweet.
+   - Your personal copilot immediately analyzes that specific person's post and drafts a genuine, peer-to-peer reply in your learned voice.
+6. **Review, Edit & Publish**:
+   - Each suggestion card shows the draft, character count (max 280), and DeepSeek's **Human Copilot Match Score** (audited against generic AI social media manager tropes).
+   - Edit the draft directly in the box. Notice the amber delta indicator confirming that your edits will teach the copilot your exact refinement habits.
+   - Click **"Approve & Post to X (Official API)"** to publish directly as a tweet or reply.
+   - Click **✕** to reject, with quick feedback tags (*"Sounds like generic AI"*, *"Too promotional"*, *"Awkward phrasing"*) that teach the model what you reject.
+
+---
+
+## Automated 2x Daily Suggestions (Cron Endpoint)
+
+DailyReads includes an automated generation endpoint:
+- **`GET /api/cron/x-suggestions`** (or `POST`)
+  - Automatically determines whether to generate a **morning** or **evening** suggestion batch based on Berlin local time.
+  - Optional query parameter: `?slot=morning` or `?slot=evening`.
+  - Can be invoked by GitHub Actions, cron-job.org, or Vercel Cron twice daily (e.g. at 09:00 and 18:00).
