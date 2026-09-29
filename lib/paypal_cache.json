@@ -1,4 +1,10 @@
 {
-  "productId": "PROD-5LF75987V1440862X",
-  "planId": "P-5JG00702NP899661KNISGL7Q"
+  "sandbox": {
+    "productId": "PROD-5LF75987V1440862X",
+    "planId": "P-5JG00702NP899661KNISGL7Q"
+  },
+  "live": {
+    "productId": "PROD-8VT12091HX651832T",
+    "planId": "P-5DH88083TX105044YNK5T5MI"
+  }
 }

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         'paypal-transmission-time': request.headers.get('paypal-transmission-time') || '',
     };
 
-    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+    const webhookId = process.env.PAYPAL_WEBHOOK_ID || process.env.PAYPAL_WEBHOOK;
 
     if (webhookId) {
         const isValid = await verifyPayPalWebhookSignature(headers, bodyText, webhookId);

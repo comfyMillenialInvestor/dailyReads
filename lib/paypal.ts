@@ -85,6 +85,10 @@ export async function getPayPalAccessToken(): Promise<string> {
 }
 
 export async function getOrCreatePayPalProduct(accessToken: string): Promise<string> {
+    if (process.env.PAYPAL_PRODUCT_ID) {
+        return process.env.PAYPAL_PRODUCT_ID;
+    }
+
     const cache = readCache();
     if (cache.productId) {
         return cache.productId;
@@ -120,6 +124,10 @@ export async function getOrCreatePayPalProduct(accessToken: string): Promise<str
 }
 
 export async function getOrCreatePayPalPlan(accessToken: string, productId: string): Promise<string> {
+    if (process.env.PAYPAL_PLAN_ID) {
+        return process.env.PAYPAL_PLAN_ID;
+    }
+
     const cache = readCache();
     if (cache.planId) {
         return cache.planId;
