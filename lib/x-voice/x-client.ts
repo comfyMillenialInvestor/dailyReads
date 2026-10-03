@@ -161,12 +161,72 @@ export interface DiscoveredTweet {
     authorName: string;
     authorUsername: string;
     authorAvatar?: string;
+    authorFollowers?: number;
+    isVerified?: boolean;
     url: string;
     source: 'home' | 'search';
     metrics?: {
         retweetCount?: number;
         replyCount?: number;
         likeCount?: number;
+        impressionCount?: number;
+        quoteCount?: number;
+        bookmarkCount?: number;
+    };
+    viewsEstimated?: number;
+    velocityScore?: number;
+    isGoldenWindow?: boolean;
+}
+
+/**
+ * Helper to compute audience reach and opportunity score
+ */
+function enrichTweetWithMetrics(t: any, author: any, source: 'home' | 'search'): DiscoveredTweet {
+    const followers = author?.public_metrics?.followers_count || 0;
+    const likes = t.public_metrics?.like_count || 0;
+    const retweets = t.public_metrics?.retweet_count || 0;
+    const replies = t.public_metrics?.reply_count || 0;
+    const rawImpressions = t.public_metrics?.impression_count;
+
+    // Estimate total audience/impressions if Twitter API v2 impression_count is omitted or 0
+    let viewsEstimated = rawImpressions && rawImpressions > 0
+        ? rawImpressions
+        : Math.max(
+            likes * 45 + retweets * 140 + replies * 30 + 150,
+            followers > 0 ? Math.round(followers * 0.06) : 0
+        );
+
+    // Calculate engagement velocity (engagement per hour)
+    const createdAtMs = t.created_at ? new Date(t.created_at).getTime() : Date.now();
+    const ageInHours = Math.max(0.08, (Date.now() - createdAtMs) / (1000 * 60 * 60));
+    const totalEngagement = likes + retweets * 2 + replies;
+    const velocityScore = Math.round(totalEngagement / ageInHours);
+
+    // Golden Window: posted in the last 45 minutes with early engagement or large audience
+    const isGoldenWindow = ageInHours <= 0.75 && (totalEngagement >= 3 || followers >= 3000);
+
+    return {
+        id: t.id,
+        text: t.text,
+        createdAt: t.created_at,
+        authorName: author?.name || 'User',
+        authorUsername: author?.username || 'user',
+        authorAvatar: author?.profile_image_url,
+        authorFollowers: followers,
+        isVerified: Boolean(author?.verified),
+        url: `https://x.com/${author?.username || 'i'}/status/${t.id}`,
+        source,
+        metrics: t.public_metrics ? {
+            retweetCount: retweets,
+            replyCount: replies,
+            likeCount: likes,
+            impressionCount: rawImpressions,
+            quoteCount: t.public_metrics.quote_count,
+            bookmarkCount: t.public_metrics.bookmark_count,
+        } : undefined,
+        viewsEstimated,
+        velocityScore,
+        isGoldenWindow,
     };
 }
 
@@ -174,38 +234,21 @@ export interface DiscoveredTweet {
  * Fetches recent tweets from the authenticated user's home timeline/feed
  * to find posts to comment on.
  */
-export async function fetchHomeTimelineFeed(maxResults = 20): Promise<DiscoveredTweet[]> {
+export async function fetchHomeTimelineFeed(maxResults = 25): Promise<DiscoveredTweet[]> {
     const client = getTwitterClient();
     const res = await client.v2.homeTimeline({
         max_results: Math.min(Math.max(maxResults, 5), 50),
         exclude: ['retweets'],
         'tweet.fields': ['created_at', 'author_id', 'text', 'conversation_id', 'public_metrics'],
         expansions: ['author_id'],
-        'user.fields': ['name', 'username', 'profile_image_url'],
+        'user.fields': ['name', 'username', 'profile_image_url', 'public_metrics', 'verified'],
     });
 
     const usersMap = new Map();
     res.includes?.users?.forEach((u) => usersMap.set(u.id, u));
 
     const tweets = (res.data?.data || []).filter((t) => !t.text.startsWith('RT @'));
-    return tweets.map((t) => {
-        const author = usersMap.get(t.author_id);
-        return {
-            id: t.id,
-            text: t.text,
-            createdAt: t.created_at,
-            authorName: author?.name || 'User',
-            authorUsername: author?.username || 'user',
-            authorAvatar: author?.profile_image_url,
-            url: `https://x.com/${author?.username || 'i'}/status/${t.id}`,
-            source: 'home' as const,
-            metrics: t.public_metrics ? {
-                retweetCount: t.public_metrics.retweet_count,
-                replyCount: t.public_metrics.reply_count,
-                likeCount: t.public_metrics.like_count,
-            } : undefined,
-        };
-    });
+    return tweets.map((t) => enrichTweetWithMetrics(t, usersMap.get(t.author_id), 'home'));
 }
 
 /**
@@ -214,7 +257,7 @@ export async function fetchHomeTimelineFeed(maxResults = 20): Promise<Discovered
  */
 export async function searchRelevantTweets(
     customQuery?: string,
-    maxResults = 20
+    maxResults = 30
 ): Promise<DiscoveredTweet[]> {
     const client = getTwitterClient();
     const cleanQuery = customQuery && customQuery.trim() ? customQuery.trim() : '';
@@ -223,34 +266,17 @@ export async function searchRelevantTweets(
         : '(reading OR "short story" OR "essay" OR "poetry" OR "currently reading" OR "favorite book") -is:retweet -is:reply lang:en';
 
     const res = await client.v2.search(query, {
-        max_results: Math.min(Math.max(maxResults, 10), 50),
+        max_results: Math.min(Math.max(maxResults, 10), 60),
         'tweet.fields': ['created_at', 'author_id', 'text', 'conversation_id', 'public_metrics'],
         expansions: ['author_id'],
-        'user.fields': ['name', 'username', 'profile_image_url'],
+        'user.fields': ['name', 'username', 'profile_image_url', 'public_metrics', 'verified'],
     });
 
     const usersMap = new Map();
     res.includes?.users?.forEach((u) => usersMap.set(u.id, u));
 
     const tweets = (res.data?.data || []).filter((t) => !t.text.startsWith('RT @'));
-    return tweets.map((t) => {
-        const author = usersMap.get(t.author_id);
-        return {
-            id: t.id,
-            text: t.text,
-            createdAt: t.created_at,
-            authorName: author?.name || 'User',
-            authorUsername: author?.username || 'user',
-            authorAvatar: author?.profile_image_url,
-            url: `https://x.com/${author?.username || 'i'}/status/${t.id}`,
-            source: 'search' as const,
-            metrics: t.public_metrics ? {
-                retweetCount: t.public_metrics.retweet_count,
-                replyCount: t.public_metrics.reply_count,
-                likeCount: t.public_metrics.like_count,
-            } : undefined,
-        };
-    });
+    return tweets.map((t) => enrichTweetWithMetrics(t, usersMap.get(t.author_id), 'search'));
 }
 
 /**

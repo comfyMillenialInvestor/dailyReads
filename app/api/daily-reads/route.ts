@@ -3,6 +3,8 @@ import dbConnect from '@/lib/db';
 import Content, { ContentType } from '@/lib/models/Content';
 import crypto from 'crypto';
 
+import DailyRitual from '@/lib/models/DailyRitual';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -12,7 +14,7 @@ export async function GET(request: NextRequest) {
         const theme = searchParams.get('theme');
         const random = searchParams.get('random') === 'true';
 
-        // Ritual Logic: Check for scheduled content for today (CET)
+        // Ritual Logic: Check for scheduled content or active DailyRitual for today (CET)
         const now = new Date();
         const startOfDay = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
         startOfDay.setHours(0, 0, 0, 0);
@@ -20,6 +22,14 @@ export async function GET(request: NextRequest) {
         endOfDay.setDate(endOfDay.getDate() + 1);
 
         if (!random && !theme) {
+            const ritual = await DailyRitual.findOne({
+                date: { $gte: startOfDay, $lt: endOfDay }
+            }).populate('contentIds');
+
+            if (ritual && Array.isArray(ritual.contentIds) && ritual.contentIds.length > 0) {
+                return NextResponse.json(ritual.contentIds);
+            }
+
             const scheduled = await Content.find({
                 scheduledDate: { $gte: startOfDay, $lt: endOfDay }
             }).sort({ type: 1 }); // Sort by type to keep order consistent

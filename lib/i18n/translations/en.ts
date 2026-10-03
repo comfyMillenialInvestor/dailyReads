@@ -1,5 +1,6 @@
 const en = {
   // ── Header ──
+  'header.today': "Today's Pause",
   'header.about': 'About',
   'header.portal': 'Portal',
   'header.signOut': 'Sign Out',

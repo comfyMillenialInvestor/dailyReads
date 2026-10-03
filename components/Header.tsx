@@ -22,6 +22,10 @@ export function Header() {
                 <div className="flex items-center gap-2 md:gap-4">
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex gap-6 text-sm font-medium items-center">
+                        <Link href="/today" className="font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            {t('header.today')}
+                        </Link>
                         <Link href="/ueber" className="transition-colors hover:text-foreground/80 text-foreground/60">{t('header.about')}</Link>
                         {session ? (
                             <>
@@ -77,6 +81,14 @@ export function Header() {
             {mobileMenuOpen && (
                 <div className="md:hidden border-t bg-background/98 backdrop-blur animate-in slide-in-from-top-2 duration-200">
                     <nav className="container mx-auto px-4 py-4 flex flex-col gap-3 text-sm font-medium">
+                        <Link
+                            href="/today"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors text-primary font-semibold flex items-center gap-2"
+                        >
+                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            {t('header.today')}
+                        </Link>
                         <Link
                             href="/ueber"
                             onClick={() => setMobileMenuOpen(false)}

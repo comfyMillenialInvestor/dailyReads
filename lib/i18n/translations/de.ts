@@ -2,6 +2,7 @@ import type { TranslationKey } from './en';
 
 const de: Record<TranslationKey, string> = {
   // ── Header ──
+  'header.today': 'Heutige Pause',
   'header.about': 'Über uns',
   'header.portal': 'Portal',
   'header.signOut': 'Abmelden',

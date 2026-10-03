@@ -28,6 +28,14 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center space-y-8 md:space-y-10">
       <div className="text-center space-y-3 md:space-y-4 max-w-2xl mx-auto mt-4 px-2">
+        <Link
+          href="/today"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-all shadow-sm group mb-1"
+        >
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Heutiges Bradbury-Ritual ansehen</span>
+          <span className="opacity-70 group-hover:translate-x-0.5 transition-transform">→</span>
+        </Link>
         <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight">
           {t('home.hero.title')}
         </h1>

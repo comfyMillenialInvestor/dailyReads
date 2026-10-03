@@ -14,9 +14,9 @@ import { TwitterApi } from 'twitter-api-v2';
  */
 export async function POST(req: Request) {
   try {
-    const { post } = await req.json();
-    if (!post || typeof post !== 'string') {
-      return NextResponse.json({ error: 'Invalid post payload' }, { status: 400 });
+    const { post, thread } = await req.json();
+    if (!post && (!Array.isArray(thread) || thread.length === 0)) {
+      return NextResponse.json({ error: 'Invalid post or thread payload' }, { status: 400 });
     }
 
     const {
@@ -41,8 +41,15 @@ export async function POST(req: Request) {
     });
 
     const rwClient = client.readWrite;
-    await rwClient.v2.tweet(post);
-    return NextResponse.json({ success: true });
+
+    if (Array.isArray(thread) && thread.length > 0) {
+      const tweets = thread.filter((t: any) => typeof t === 'string' && t.trim().length > 0);
+      await rwClient.v2.tweetThread(tweets);
+      return NextResponse.json({ success: true, count: tweets.length, isThread: true });
+    } else {
+      await rwClient.v2.tweet(post);
+      return NextResponse.json({ success: true, isThread: false });
+    }
   } catch (error: any) {
     console.error('X posting failed:', error);
     // Surface Twitter API error details

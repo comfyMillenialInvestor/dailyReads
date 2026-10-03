@@ -124,13 +124,19 @@ interface DiscoveredTweet {
     authorName: string;
     authorUsername: string;
     authorAvatar?: string;
+    authorFollowers?: number;
+    isVerified?: boolean;
     url: string;
     source: 'home' | 'search';
     metrics?: {
         retweetCount?: number;
         replyCount?: number;
         likeCount?: number;
+        impressionCount?: number;
     };
+    viewsEstimated?: number;
+    velocityScore?: number;
+    isGoldenWindow?: boolean;
 }
 
 interface InlineDraftState {
@@ -231,6 +237,7 @@ export default function XSuggestionsAdmin() {
     const [inlineDrafts, setInlineDrafts] = useState<{ [tweetId: string]: InlineDraftState }>({});
     const [dismissedTweetIds, setDismissedTweetIds] = useState<string[]>([]);
     const [feedFilter, setFeedFilter] = useState<'all' | 'with-drafts'>('all');
+    const [feedSortBy, setFeedSortBy] = useState<'views' | 'golden' | 'velocity' | 'recent'>('views');
     const [copiedTweetId, setCopiedTweetId] = useState<string | null>(null);
 
     // Load initial data
@@ -1453,9 +1460,9 @@ export default function XSuggestionsAdmin() {
                                 </div>
                             )}
 
-                            {/* Curated Topic Chips */}
-                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                                <span className="text-[11px] font-medium text-muted-foreground mr-1">Curated:</span>
+                            {/* Curated Topic Chips (Mobile Scrollable) */}
+                            <div className="flex items-center gap-1.5 pt-1 overflow-x-auto no-scrollbar whitespace-nowrap">
+                                <span className="text-[11px] font-medium text-muted-foreground mr-1 shrink-0">Topics:</span>
                                 {CURATED_TOPICS.map((topic) => (
                                     <button
                                         key={topic.label}
@@ -1464,16 +1471,61 @@ export default function XSuggestionsAdmin() {
                                             setFeedQuery(topic.query);
                                             loadFeedTweets('search', topic.query);
                                         }}
-                                        className="px-2.5 py-1 rounded-full bg-background border border-border/80 hover:border-sky-500/50 hover:bg-sky-500/5 text-[11px] transition-colors"
+                                        className="px-2.5 py-1 rounded-full bg-background border border-border/80 hover:border-sky-500/50 hover:bg-sky-500/5 text-[11px] transition-colors shrink-0"
                                     >
                                         {topic.label}
                                     </button>
                                 ))}
                             </div>
 
-                            {/* View Filter: All vs Drafted */}
-                            <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
-                                <div className="flex items-center gap-2">
+                            {/* Sort Selector Bar: Most Views, Golden Window, Velocity, Newest */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-border/40 text-xs gap-2">
+                                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar whitespace-nowrap">
+                                    <span className="text-[11px] text-muted-foreground font-medium mr-1 shrink-0">Sort:</span>
+                                    <button
+                                        onClick={() => setFeedSortBy('views')}
+                                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors shrink-0 ${
+                                            feedSortBy === 'views'
+                                                ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-semibold'
+                                                : 'text-muted-foreground hover:text-foreground bg-background/50 border border-border/40'
+                                        }`}
+                                    >
+                                        👁️ Most Views / Audience
+                                    </button>
+                                    <button
+                                        onClick={() => setFeedSortBy('golden')}
+                                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors shrink-0 ${
+                                            feedSortBy === 'golden'
+                                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-semibold'
+                                                : 'text-muted-foreground hover:text-foreground bg-background/50 border border-border/40'
+                                        }`}
+                                    >
+                                        🔥 Golden Window (&lt;45m)
+                                    </button>
+                                    <button
+                                        onClick={() => setFeedSortBy('velocity')}
+                                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors shrink-0 ${
+                                            feedSortBy === 'velocity'
+                                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold'
+                                                : 'text-muted-foreground hover:text-foreground bg-background/50 border border-border/40'
+                                        }`}
+                                    >
+                                        ⚡ Velocity
+                                    </button>
+                                    <button
+                                        onClick={() => setFeedSortBy('recent')}
+                                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors shrink-0 ${
+                                            feedSortBy === 'recent'
+                                                ? 'bg-foreground/10 text-foreground border border-border/60 font-semibold'
+                                                : 'text-muted-foreground hover:text-foreground bg-background/50 border border-border/40'
+                                        }`}
+                                    >
+                                        🕒 Newest
+                                    </button>
+                                </div>
+
+                                {/* View Filter: All vs Drafted */}
+                                <div className="flex items-center gap-2 shrink-0">
                                     <button
                                         onClick={() => setFeedFilter('all')}
                                         className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
@@ -1482,7 +1534,7 @@ export default function XSuggestionsAdmin() {
                                                 : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                     >
-                                        All Posts ({feedTweets.filter((t) => !dismissedTweetIds.includes(t.id)).length})
+                                        All ({feedTweets.filter((t) => !dismissedTweetIds.includes(t.id)).length})
                                     </button>
                                     <button
                                         onClick={() => setFeedFilter('with-drafts')}
@@ -1492,17 +1544,17 @@ export default function XSuggestionsAdmin() {
                                                 : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                     >
-                                        With Drafts ({feedTweets.filter((t) => inlineDrafts[t.id]?.text).length})
+                                        Drafted ({feedTweets.filter((t) => inlineDrafts[t.id]?.text).length})
                                     </button>
+                                    {dismissedTweetIds.length > 0 && (
+                                        <button
+                                            onClick={() => setDismissedTweetIds([])}
+                                            className="text-[11px] text-muted-foreground hover:underline ml-1"
+                                        >
+                                            Unhide ({dismissedTweetIds.length})
+                                        </button>
+                                    )}
                                 </div>
-                                {dismissedTweetIds.length > 0 && (
-                                    <button
-                                        onClick={() => setDismissedTweetIds([])}
-                                        className="text-[11px] text-muted-foreground hover:underline"
-                                    >
-                                        Unhide {dismissedTweetIds.length} hidden posts
-                                    </button>
-                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -1528,6 +1580,21 @@ export default function XSuggestionsAdmin() {
                                     if (dismissedTweetIds.includes(tweet.id)) return false;
                                     if (feedFilter === 'with-drafts' && !inlineDrafts[tweet.id]?.text) return false;
                                     return true;
+                                })
+                                .sort((a, b) => {
+                                    if (feedSortBy === 'views') {
+                                        return (b.viewsEstimated || 0) - (a.viewsEstimated || 0);
+                                    }
+                                    if (feedSortBy === 'golden') {
+                                        const aGolden = a.isGoldenWindow ? 1 : 0;
+                                        const bGolden = b.isGoldenWindow ? 1 : 0;
+                                        if (aGolden !== bGolden) return bGolden - aGolden;
+                                        return (b.viewsEstimated || 0) - (a.viewsEstimated || 0);
+                                    }
+                                    if (feedSortBy === 'velocity') {
+                                        return (b.velocityScore || 0) - (a.velocityScore || 0);
+                                    }
+                                    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
                                 })
                                 .map((tweet) => {
                                     const draft = inlineDrafts[tweet.id];
@@ -1574,9 +1641,31 @@ export default function XSuggestionsAdmin() {
                                                                     {formatRelativeTime(tweet.createdAt)}
                                                                 </span>
                                                             </div>
-                                                            <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground mt-0.5">
-                                                                {tweet.source === 'home' ? 'Following' : 'Discovered in Literature'}
-                                                            </span>
+                                                            <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                                                <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground">
+                                                                    {tweet.source === 'home' ? 'Following' : 'Discovered in Literature'}
+                                                                </span>
+                                                                {tweet.isGoldenWindow && (
+                                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1">
+                                                                        🔥 Golden Window (&lt;45m)
+                                                                    </span>
+                                                                )}
+                                                                {tweet.viewsEstimated && tweet.viewsEstimated > 0 && (
+                                                                    <span className="text-[10px] font-medium font-mono px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                                                                        👁️ ~{tweet.viewsEstimated > 1000 ? `${(tweet.viewsEstimated / 1000).toFixed(1)}k` : tweet.viewsEstimated} reach
+                                                                    </span>
+                                                                )}
+                                                                {tweet.authorFollowers && tweet.authorFollowers > 0 && (
+                                                                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                                                        👥 {tweet.authorFollowers > 1000 ? `${(tweet.authorFollowers / 1000).toFixed(1)}k` : tweet.authorFollowers}
+                                                                    </span>
+                                                                )}
+                                                                {tweet.velocityScore && tweet.velocityScore > 5 && (
+                                                                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                                                                        ⚡ +{tweet.velocityScore}/hr
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
 

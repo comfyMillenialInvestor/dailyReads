@@ -174,8 +174,9 @@ CONSTRAINTS:
 1. MAX 280 CHARACTERS.
 2. Must feel 100% human, effortless, and true to the author's real posts.
 3. ABSOLUTELY ZERO marketing slogans, calls to action, hashtag spam, or inspirational posturing.
-4. If this is a reply, speak directly to the person as a peer.
-5. If this is a post, ground it in quiet daily reality or literature.
+4. If this is a reply: NEVER include external links (no URLs or 'http') — X algorithm deprioritizes comments with links. Provide pure intellectual value, a witty observation, or a resonant Bradbury/literary angle instead. Let our bio do the work.
+5. If this is a reply, speak directly to the person as an authentic peer.
+6. If this is a post, ground it in quiet daily reality or literature.
 
 OUTPUT:
 Return ONLY the draft text, with no extra commentary or quotes.
