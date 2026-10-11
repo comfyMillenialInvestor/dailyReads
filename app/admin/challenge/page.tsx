@@ -389,10 +389,10 @@ Tomorrow we start week ${nextWeek}.
                             <ExternalLink className="h-3 w-3 opacity-60" />
                         </Button>
                     </Link>
-                    <Link href="/admin/x-suggestions">
-                        <Button variant="outline" size="sm" className="text-xs shrink-0 border-sky-500/30 hover:border-sky-500/60 text-sky-600 dark:text-sky-400">
+                    <Link href="/admin">
+                        <Button variant="outline" size="sm" className="text-xs shrink-0 border-sky-500/30 hover:border-sky-500/60 text-sky-600 dark:text-sky-400 font-medium">
                             <Twitter className="mr-1.5 h-3.5 w-3.5 text-sky-500" />
-                            X Suggestions
+                            X Command Center
                         </Button>
                     </Link>
                 </div>

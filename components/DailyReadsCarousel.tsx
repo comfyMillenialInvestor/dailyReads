@@ -275,43 +275,48 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                         <CarouselItem key={String(item._id) + index}>
                             <div className="p-1">
                                 <Card className="h-[calc(100vh-280px)] min-h-[400px] max-h-[600px] md:min-h-[460px] md:h-[600px] flex flex-col bg-card border-border shadow-lg">
-                                    <CardHeader className="pb-3 px-3 md:px-6">
-                                        <div className="flex justify-between items-start gap-3 md:gap-4 w-full">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                    <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
-                                                        {getTypeLabel(item.type)}
-                                                    </span>
-                                                    <span className="capitalize text-[10px] px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium">
-                                                        {item.theme}
-                                                    </span>
-                                                </div>
-                                                <CardTitle className="text-lg md:text-2xl font-serif font-bold text-foreground mb-1 leading-tight line-clamp-2">
-                                                    {lang === 'de' && item.title_de ? item.title_de : (item.title_en || item.title)}
-                                                </CardTitle>
-                                                <CardDescription className="text-xs md:text-sm font-medium text-muted-foreground/80 truncate">
-                                                    by {item.author} {item.source && !(item.source.startsWith("HF:") || item.source.startsWith("HF: ") || item.source.length > 20) && <span>• {item.source}</span>}
-                                                </CardDescription>
+                                    <CardHeader className="pb-2.5 md:pb-3 px-3.5 md:px-6 pt-3.5 md:pt-6">
+                                        {/* Top row: Badges on left, stats + expand on right */}
+                                        <div className="flex items-center justify-between gap-2 mb-2 w-full">
+                                            <div className="flex flex-wrap items-center gap-1.5 md:gap-2 min-w-0">
+                                                <span className="bg-primary/10 text-primary px-2 md:px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block shrink-0">
+                                                    {getTypeLabel(item.type)}
+                                                </span>
+                                                <span className="capitalize text-[10px] px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium truncate max-w-[120px]">
+                                                    {item.theme}
+                                                </span>
                                             </div>
 
-                                            <div className="flex flex-col items-end gap-2 shrink-0">
+                                            <div className="flex items-center gap-2 shrink-0">
                                                 <div className="text-right text-[10px] md:text-xs text-muted-foreground/80 leading-tight">
-                                                    {item.readTime && <div>{item.readTime}</div>}
-                                                    {item.estimatedWords && <div>~{item.estimatedWords} {t('carousel.words')}</div>}
+                                                    {item.readTime && <span>{item.readTime}</span>}
+                                                    {item.readTime && item.estimatedWords && <span className="hidden sm:inline"> • </span>}
+                                                    {item.estimatedWords && <span className="hidden sm:inline">~{item.estimatedWords} {t('carousel.words')}</span>}
                                                 </div>
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    className="flex items-center gap-1.5 text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200 min-h-[36px] min-w-[44px] px-3"
+                                                    className="flex items-center gap-1.5 text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200 h-7 md:h-8 px-2.5 md:px-3 shrink-0 shadow-sm"
                                                     onClick={() => {
                                                         setReaderItem(item);
                                                         setScrollProgress(0);
                                                     }}
+                                                    title={t('carousel.expand')}
                                                 >
-                                                    <Maximize2 className="h-3.5 w-3.5" />
-                                                    <span>{t('carousel.expand')}</span>
+                                                    <Maximize2 className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                                                    <span className="font-medium">{t('carousel.expand')}</span>
                                                 </Button>
                                             </div>
+                                        </div>
+
+                                        {/* Title and Author get full card width */}
+                                        <div className="min-w-0">
+                                            <CardTitle className="text-base sm:text-lg md:text-2xl font-serif font-bold text-foreground mb-1 leading-snug line-clamp-2">
+                                                {lang === 'de' && item.title_de ? item.title_de : (item.title_en || item.title)}
+                                            </CardTitle>
+                                            <CardDescription className="text-xs md:text-sm font-medium text-muted-foreground/80 truncate">
+                                                by {item.author} {item.source && !(item.source.startsWith("HF:") || item.source.startsWith("HF: ") || item.source.length > 20) && <span>• {item.source}</span>}
+                                            </CardDescription>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-hidden relative px-3 md:px-6">
