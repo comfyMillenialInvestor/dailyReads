@@ -37,6 +37,11 @@ export function Footer() {
                     <h4 className="font-bold text-sm mb-4">{t('footer.connect')}</h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                         <li>
+                            <Link href="/community" className="hover:underline">
+                                Community & Leaderboard
+                            </Link>
+                        </li>
+                        <li>
                             <Link href="/portal/subscribe" className="hover:underline text-primary/80 font-medium">
                                 {t('footer.ritualMembership')} {isPaid && "✓"}
                             </Link>

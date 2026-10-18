@@ -15,6 +15,7 @@ export const VALID_THEMES = [
     'art',
     'politics',
     'economy',
+    'community',
 ] as const;
 
 export type Theme = (typeof VALID_THEMES)[number] | 'more';
@@ -40,6 +41,17 @@ export interface IContent extends Document {
     title_en?: string;
     content_en?: string;
     summary_en?: string;
+    // Community & Author features
+    userId?: mongoose.Types.ObjectId;
+    authorName?: string;
+    isCommunity?: boolean;
+    upvotes?: number;
+    downvotes?: number;
+    score?: number;
+    status?: 'published' | 'draft' | 'archived';
+    copyrightAgreed?: boolean;
+    copyrightAgreedAt?: Date;
+    termsVersion?: string;
 }
 
 const COLLECTION_NAME = process.env.COLLECTION_NAME || 'Content';
@@ -73,12 +85,26 @@ const ContentSchema: Schema = new Schema(
         title_en: { type: String },
         content_en: { type: String },
         summary_en: { type: String },
+        // Community & Author features
+        userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+        authorName: { type: String },
+        isCommunity: { type: Boolean, default: false, index: true },
+        upvotes: { type: Number, default: 0 },
+        downvotes: { type: Number, default: 0 },
+        score: { type: Number, default: 0, index: true },
+        status: { type: String, enum: ['published', 'draft', 'archived'], default: 'published' },
+        copyrightAgreed: { type: Boolean, default: false },
+        copyrightAgreedAt: { type: Date },
+        termsVersion: { type: String, default: '1.0' },
     },
     {
         timestamps: true,
         collection: COLLECTION_NAME // Explicitly set collection name
     }
 );
+
+ContentSchema.index({ theme: 1, score: -1 });
+ContentSchema.index({ isCommunity: 1, score: -1 });
 
 
 // Prevent overwrite model error in watch mode

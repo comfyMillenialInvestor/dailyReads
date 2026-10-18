@@ -122,13 +122,45 @@ export default function Impressum() {
                     <div className="space-y-3 p-6 bg-primary/5 rounded-2xl border border-primary/10 border-dashed">
                         <h4 className="font-bold text-foreground flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                            Hinweis zu literarischen Inhalten
+                            Hinweis zu historischen literarischen Inhalten
                         </h4>
                         <p className="text-xs">
-                            Die auf dieser Website bereitgestellten literarischen Texte (Kurzgeschichten, Gedichte, Essays und Zitate) stammen ausschließlich aus dem <strong>Public Domain (Gemeinfreiheit)</strong>. Wir erheben keine urheberrechtlichen Ansprüche auf diese Originalwerke.
+                            Die auf dieser Website bereitgestellten klassischen Texte (Kurzgeschichten, Gedichte, Essays und Zitate historischer Autoren) stammen ausschließlich aus dem <strong>Public Domain (Gemeinfreiheit)</strong>. Wir erheben keine urheberrechtlichen Ansprüche auf diese Originalwerke.
                         </p>
                         <p className="text-xs">
                             <strong>KI-generierte Metadaten:</strong> Bei historischen Werken können Metadaten (z.B. Autor, Entstehungsjahr) teilweise unvollständig sein. In diesen Fällen werden Zuordnungen mithilfe von KI-gestützten Verfahren <em>angenommen</em>. Wir übernehmen keine Gewähr für die absolute Korrektheit dieser Zuordnungen.
+                        </p>
+                    </div>
+
+                    {/* Nutzergenerierte Inhalte, Autorenrechte & Copyright-Ausschluss */}
+                    <div className="space-y-3 p-6 bg-primary/5 rounded-2xl border border-primary/20">
+                        <h4 className="font-bold text-foreground flex items-center gap-2">
+                            <Scale className="h-4 w-4 text-primary" />
+                            Nutzergenerierte Inhalte & Urheberrecht (Autoren-Bereich & Community)
+                        </h4>
+                        <p className="text-xs font-semibold text-foreground">
+                            1. Kein Copyright-Anspruch durch den Plattformbetreiber:
+                        </p>
+                        <p className="text-xs">
+                            Der Betreiber von Daily Reads (Curionis Intelligence) beansprucht zu <strong>keinem Zeitpunkt</strong> das Urheberrecht, Eigentum oder ausschließliche Verwertungsrechte an Texten, Gedichten, Geschichten oder Zitaten, die von Autoren im Community-Bereich hochgeladen werden. Das geistige Eigentum verbleibt vollumfänglich und unübertragbar beim jeweiligen Urheber/Autor (§ 29 UrhG).
+                        </p>
+                        <p className="text-xs font-semibold text-foreground">
+                            2. Freiwilligkeit & Einfaches Nutzungsrecht:
+                        </p>
+                        <p className="text-xs">
+                            Jeder Upload durch registrierte Nutzer erfolgt <strong>vollkommen freiwillig</strong> und in eigener Verantwortung. Mit dem Upload räumt der Autor dem Plattformbetreiber lediglich ein unentgeltliches, nicht-exklusives, räumlich und zeitlich unbeschränktes Recht ein, das Werk auf dailyreads.eu und zugehörigen Interfaces digital zu speichern, technisch zu formatieren, im Reader-Modus öffentlich zugänglich zu machen (§ 19a UrhG) und im Rahmen der Plattform-Rankings (Upvoting/Downvoting/Leaderboard) darzustellen.
+                        </p>
+                        <p className="text-xs font-semibold text-foreground">
+                            3. Urheberschaftsgarantie & Haftungsfreistellung:
+                        </p>
+                        <p className="text-xs">
+                            Der einreichende Nutzer bestätigt vor jedem Upload verbindlich, alleiniger Urheber des Werkes zu sein und über alle erforderlichen Rechte zu verfügen. Der Nutzer stellt den Betreiber von sämtlichen Ansprüchen Dritter (einschließlich Urheberrechts-, Marken- oder Persönlichkeitsrechtsverletzungen) vollumfänglich frei, die durch das eingereichte Werk schuldhaft verursacht werden.
+                        </p>
+                        <p className="text-xs font-semibold text-foreground">
+                            4. Beanstandungsverfahren (Notice-and-Takedown):
+                        </p>
+                        <p className="text-xs">
+                            Sollten Sie der Ansicht sein, dass ein Nutzer-Inhalt Ihre Schutzrechte verletzt, informieren Sie uns bitte umgehend per E-Mail an <a href="mailto:support@dailyreads.eu" className="text-primary hover:underline font-mono">support@dailyreads.eu</a>. Nach Prüfung wird der betroffene Inhalt unverzüglich gesperrt oder gelöscht (§ 10 DDG).
                         </p>
                     </div>
                 </section>

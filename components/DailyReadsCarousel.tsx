@@ -12,6 +12,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { CommunityVoteButtons } from '@/components/CommunityVoteButtons';
 
 
 interface DailyReadsCarouselProps {
@@ -288,6 +289,15 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                             </div>
 
                                             <div className="flex items-center gap-2 shrink-0">
+                                                {Boolean(item._id) && (
+                                                    <CommunityVoteButtons
+                                                        contentId={item._id.toString()}
+                                                        initialScore={(item as any).score || 0}
+                                                        initialUpvotes={(item as any).upvotes || 0}
+                                                        initialDownvotes={(item as any).downvotes || 0}
+                                                        size="sm"
+                                                    />
+                                                )}
                                                 <div className="text-right text-[10px] md:text-xs text-muted-foreground/80 leading-tight">
                                                     {item.readTime && <span>{item.readTime}</span>}
                                                     {item.readTime && item.estimatedWords && <span className="hidden sm:inline"> • </span>}

@@ -7,6 +7,7 @@ import type { IContent } from '@/lib/models/Content';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { CommunityVoteButtons } from '@/components/CommunityVoteButtons';
 
 interface TextReaderModalProps {
     item: IContent | null;
@@ -96,6 +97,19 @@ export function TextReaderModal({ item, onClose }: TextReaderModalProps) {
 
                 {/* Control Panel */}
                 <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
+                    {/* Story Voting */}
+                    {Boolean(item?._id) && (
+                        <div className="flex items-center mr-1">
+                            <CommunityVoteButtons
+                                contentId={item._id.toString()}
+                                initialScore={(item as any).score || 0}
+                                initialUpvotes={(item as any).upvotes || 0}
+                                initialDownvotes={(item as any).downvotes || 0}
+                                size="sm"
+                            />
+                        </div>
+                    )}
+
                     {/* Font Size Adjuster */}
                     <div className="flex items-center border rounded-full overflow-hidden p-0.5 bg-muted/20">
                         <button

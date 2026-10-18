@@ -4,16 +4,19 @@ import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, Calendar, CreditCard, ChevronRight, Loader2, Download, Trash2, AlertTriangle, Settings, XCircle } from 'lucide-react';
+import { Flame, Calendar, CreditCard, ChevronRight, Loader2, Download, Trash2, AlertTriangle, Settings, XCircle, ChevronDown, ArrowDown, PenTool } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { AuthorPortalSection } from '@/components/AuthorPortalSection';
+import { cn } from '@/lib/utils';
 
 export default function PortalPage() {
     const { data: session, status } = useSession();
     const [completions, setCompletions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [historyFolded, setHistoryFolded] = useState(true);
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [exporting, setExporting] = useState(false);
@@ -28,7 +31,7 @@ export default function PortalPage() {
     const [passwordSuccess, setPasswordSuccess] = useState(false);
 
     const isPaid = (session?.user as any)?.isPaid || false;
-    const { t } = useLanguage();
+    const { lang, t } = useLanguage();
 
     useEffect(() => {
         if (status === 'authenticated' && isPaid) {
@@ -156,10 +159,22 @@ export default function PortalPage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-700 px-2">
-            <div className="space-y-2 border-b pb-6">
-                <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">{t('portal.title')}</h1>
-                <p className="text-muted-foreground">{t('portal.welcomeBack')}, {session?.user?.name || t('portal.ritualist')}</p>
-                <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
+                <div className="space-y-1">
+                    <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">{t('portal.title')}</h1>
+                    <p className="text-muted-foreground">{t('portal.welcomeBack')}, {session?.user?.name || t('portal.ritualist')}</p>
+                    <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
+                </div>
+                {/* Jump to Editing Studio Action */}
+                <div className="flex items-center gap-2">
+                    <Button asChild variant="outline" className="border-primary/30 hover:bg-primary/5 shadow-sm rounded-full text-xs font-medium">
+                        <a href="#author-studio" className="flex items-center gap-2">
+                            <PenTool className="h-3.5 w-3.5 text-primary" />
+                            <span>{lang === 'de' ? 'Zum Autoren-Studio springen' : "Jump to Writer's Studio"}</span>
+                            <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
+                        </a>
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
@@ -219,12 +234,37 @@ export default function PortalPage() {
                     </CardContent>
                 </Card>
             ) : (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="font-serif">{t('portal.historyTitle')}</CardTitle>
-                        <CardDescription>{t('portal.historyDesc')}</CardDescription>
+                <Card className="border-border/60 overflow-hidden">
+                    <CardHeader
+                        className="cursor-pointer select-none hover:bg-muted/10 transition-colors"
+                        onClick={() => setHistoryFolded(!historyFolded)}
+                    >
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <CardTitle className="font-serif text-lg">{t('portal.historyTitle')}</CardTitle>
+                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                        {completions.length} {lang === 'de' ? 'Tage erfasst' : 'days recorded'}
+                                    </span>
+                                </div>
+                                <CardDescription className="text-xs">{t('portal.historyDesc')}</CardDescription>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground shrink-0 rounded-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setHistoryFolded(!historyFolded);
+                                }}
+                            >
+                                <span>{historyFolded ? (lang === 'de' ? 'Verlauf ausklappen' : 'Expand History') : (lang === 'de' ? 'Verlauf einklappen' : 'Collapse History')}</span>
+                                <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", !historyFolded && "rotate-180")} />
+                            </Button>
+                        </div>
                     </CardHeader>
-                    <CardContent>
+                    {!historyFolded && (
+                        <CardContent className="border-t border-border/40 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
                         {loading ? (
                             <div className="flex justify-center py-10">
                                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -275,8 +315,12 @@ export default function PortalPage() {
                             </div>
                         )}
                     </CardContent>
+                    )}
                 </Card>
             )}
+
+            {/* Dedicated Authors Studio Section */}
+            <AuthorPortalSection userName={session?.user?.name || ''} />
 
             {/* Account Settings Section */}
             <Card className="border-border/50">

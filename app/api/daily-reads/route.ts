@@ -39,6 +39,18 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        // Dedicated Community Category handling
+        if (theme === 'community') {
+            const communityDocs = await Content.find({
+                $or: [{ theme: 'community' }, { isCommunity: true }],
+                status: { $ne: 'archived' }
+            }).sort({ score: -1, createdAt: -1 }).limit(10);
+
+            if (communityDocs.length > 0) {
+                return NextResponse.json(communityDocs);
+            }
+        }
+
         // Target word count is ~1800 words (calibrated for a mindful 15-20 minute lunch break)
         const TARGET_WORDS = 1800;
 

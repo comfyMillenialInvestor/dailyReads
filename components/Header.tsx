@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ModeToggle } from '@/components/mode-toggle';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { User, LogOut, Menu, X } from 'lucide-react';
+import { User, LogOut, Menu, X, Trophy } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { cn } from '@/lib/utils';
 
 export function Header() {
     const { data: session } = useSession();
     const { lang, setLang, t } = useLanguage();
+    const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -22,14 +25,32 @@ export function Header() {
                 <div className="flex items-center gap-2 md:gap-4">
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex gap-6 text-sm font-medium items-center">
-                        <Link href="/today" className="font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+                        <Link href="/today" className={cn(
+                            "transition-colors flex items-center gap-1.5",
+                            pathname === '/today' ? "font-semibold text-primary" : "text-foreground/70 hover:text-primary"
+                        )}>
                             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                             {t('header.today')}
                         </Link>
-                        <Link href="/ueber" className="transition-colors hover:text-foreground/80 text-foreground/60">{t('header.about')}</Link>
+                        <Link href="/community" className={cn(
+                            "transition-colors flex items-center gap-1.5",
+                            pathname?.startsWith('/community') ? "font-semibold text-primary" : "text-foreground/70 hover:text-foreground"
+                        )}>
+                            <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                            <span>{t('header.leaderboard')}</span>
+                        </Link>
+                        <Link href="/ueber" className={cn(
+                            "transition-colors hover:text-foreground",
+                            pathname === '/ueber' ? "font-semibold text-primary" : "text-foreground/70"
+                        )}>
+                            {t('header.about')}
+                        </Link>
                         {session ? (
                             <>
-                                <Link href="/portal" className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60">
+                                <Link href="/portal" className={cn(
+                                    "flex items-center gap-1 transition-colors hover:text-foreground",
+                                    pathname === '/portal' ? "font-semibold text-primary" : "text-foreground/70"
+                                )}>
                                     <User className="h-4 w-4" />
                                     {t('header.portal')}
                                 </Link>
@@ -88,6 +109,14 @@ export function Header() {
                         >
                             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                             {t('header.today')}
+                        </Link>
+                        <Link
+                            href="/community"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors text-foreground/80 font-medium flex items-center gap-2"
+                        >
+                            <Trophy className="h-4 w-4 text-amber-500" />
+                            <span>{t('header.leaderboard')}</span>
                         </Link>
                         <Link
                             href="/ueber"
