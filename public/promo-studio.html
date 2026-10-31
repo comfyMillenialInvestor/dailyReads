@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyReads - Cinema Promo Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0C0E12;
+            --surface: rgba(22, 26, 32, 0.75);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary: #D4A373;
+            --primary-glow: rgba(212, 163, 115, 0.25);
+            --text-main: #F4EFEB;
+            --text-muted: #9E9AA0;
+            --accent: #E07A5F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ambient background glow */
+        .ambient-glow {
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 163, 115, 0.08) 0%, rgba(12, 14, 18, 0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 700px;
+            margin-bottom: 36px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(212, 163, 115, 0.1);
+            border: 1px solid rgba(212, 163, 115, 0.25);
+            color: var(--primary);
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #FFF 0%, #E8DFD8 60%, #D4A373 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Video Showcase Grid */
+        .showcase-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 36px;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 50px;
+        }
+
+        .video-card {
+            background: var(--surface);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .video-card:hover {
+            border-color: rgba(212, 163, 115, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #FFF;
+        }
+
+        .card-tag {
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Screen Stage (9:16 vertical reels & story layout or cinematic 16:9) */
+        .canvas-stage {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9 / 16;
+            max-height: 580px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Playback & Controls */
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 6px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #D4A373 0%, #C08A56 100%);
+            color: #121417;
+            box-shadow: 0 4px 14px rgba(212, 163, 115, 0.35);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.95;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-record {
+            background: #E07A5F;
+            color: #FFF;
+        }
+
+        .btn-record.recording {
+            animation: pulseRecord 1.5s infinite;
+        }
+
+        @keyframes pulseRecord {
+            0% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(224, 122, 95, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0); }
+        }
+
+        .timeline-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .timeline-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.1s linear;
+        }
+
+        .audio-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .audio-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2A9D8F;
+        }
+
+        .audio-indicator.active {
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <div class="header">
+        <div class="badge">Studio Ad Cinema • 4K Clean Feed</div>
+        <h1>DailyReads Promo Studio</h1>
+        <p class="subtitle">Zero watermark, zero mouse cursors. Pure cinematic motion design with calm British studio voiceover (Ryan Neural).</p>
+    </div>
+
+    <div class="showcase-grid">
+        <!-- VIDEO 1: The Daily Habit & Bradbury Challenge -->
+        <div class="video-card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">1. The Bradbury Habit</div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">1 Poem • 1 Essay • 1 Story • 20 Min Pause</p>
+                </div>
+                <span class="card-tag">14s • 1080×1920</span>
+            </div>
+
+            <div class="canvas-stage">
+                <canvas id="canvas-habit" width="1080" height="1920"></canvas>
+            </div>
+
+            <div class="timeline-bar">
+                <div class="timeline-fill" id="timeline-habit"></div>
+            </div>
+
+            <div class="controls-row">
+                <button class="btn btn-primary" id="btn-play-habit" onclick="togglePlay('habit')">
+                    ▶ Play Preview
+                </button>
+                <button class="btn btn-secondary btn-record" id="btn-record-habit" onclick="recordVideo('habit')">
+                    ⏺ Export WebM Video
+                </button>
+            </div>
+
+            <div class="card-header" style="margin-top: 4px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <div class="audio-pill">
+                    <span class="audio-indicator" id="ind-habit"></span>
+                    <span>RyanNeural Studio • Voiceover Synced</span>
+                </div>
+                <a href="/audio/voiceover_promo_habit_studio.mp3" download class="btn-secondary" style="font-size: 11px; padding: 4px 10px; border-radius: 6px; text-decoration: none;">
+                    Download MP3
+                </a>
+            </div>
+        </div>
+
+        <!-- VIDEO 2: Community & Member Publishing -->
+        <div class="video-card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">2. Member Publishing</div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">Write • Publish • Upvote • Get Discovered</p>
+                </div>
+                <span class="card-tag">14s • 1080×1920</span>
+            </div>
+
+            <div class="canvas-stage">
+                <canvas id="canvas-community" width="1080" height="1920"></canvas>
+            </div>
+
+            <div class="timeline-bar">
+                <div class="timeline-fill" id="timeline-community"></div>
+            </div>
+
+            <div class="controls-row">
+                <button class="btn btn-primary" id="btn-play-community" onclick="togglePlay('community')">
+                    ▶ Play Preview
+                </button>
+                <button class="btn btn-secondary btn-record" id="btn-record-community" onclick="recordVideo('community')">
+                    ⏺ Export WebM Video
+                </button>
+            </div>
+
+            <div class="card-header" style="margin-top: 4px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <div class="audio-pill">
+                    <span class="audio-indicator" id="ind-community"></span>
+                    <span>RyanNeural Studio • Voiceover Synced</span>
+                </div>
+                <a href="/audio/voiceover_promo_community_studio.mp3" download class="btn-secondary" style="font-size: 11px; padding: 4px 10px; border-radius: 6px; text-decoration: none;">
+                    Download MP3
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="audio-habit" src="/audio/voiceover_promo_habit_studio.mp3" preload="auto"></audio>
+    <audio id="audio-community" src="/audio/voiceover_promo_community_studio.mp3" preload="auto"></audio>
+
+    <!-- Preloaded Calm Background Images -->
+    <img id="bg-lake" src="/backgrounds/calm-lake.jpg" style="display:none;" />
+    <img id="bg-mist" src="/backgrounds/morning-mist.jpg" style="display:none;" />
+    <img id="bg-forest" src="/backgrounds/quiet-forest.jpg" style="display:none;" />
+    <img id="bg-mountains" src="/backgrounds/serene-mountains.jpg" style="display:none;" />
+
+    <script>
+        const DURATION = 14.0; // seconds
+
+        // State trackers
+        const states = {
+            habit: { isPlaying: false, startTime: 0, animId: null, recorder: null, recordedChunks: [] },
+            community: { isPlaying: false, startTime: 0, animId: null, recorder: null, recordedChunks: [] }
+        };
+
+        function togglePlay(type) {
+            const st = states[type];
+            const audio = document.getElementById(`audio-${type}`);
+            const btn = document.getElementById(`btn-play-${type}`);
+            const ind = document.getElementById(`ind-${type}`);
+
+            if (st.isPlaying) {
+                audio.pause();
+                st.isPlaying = false;
+                btn.innerText = '▶ Play Preview';
+                ind.classList.remove('active');
+                cancelAnimationFrame(st.animId);
+            } else {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log('Audio autoplay prevented:', e));
+                st.isPlaying = true;
+                st.startTime = performance.now();
+                btn.innerText = '⏸ Pause';
+                ind.classList.add('active');
+                renderLoop(type);
+            }
+        }
+
+        function renderLoop(type) {
+            const audio = document.getElementById(`audio-${type}`);
+            const timeline = document.getElementById(`timeline-${type}`);
+            const btn = document.getElementById(`btn-play-${type}`);
+            const ind = document.getElementById(`ind-${type}`);
+
+            let progress = audio.currentTime / (audio.duration || DURATION);
+            if (progress >= 1 || audio.ended) {
+                states[type].isPlaying = false;
+                btn.innerText = '▶ Replay';
+                ind.classList.remove('active');
+                timeline.style.width = '100%';
+                drawScene(type, 1.0);
+                return;
+            }
+
+            timeline.style.width = (progress * 100) + '%';
+            drawScene(type, progress);
+            states[type].animId = requestAnimationFrame(() => renderLoop(type));
+        }
+
+        /* ========================================================================= */
+        /* CINEMATIC FRAME RENDERING ENGINE                                          */
+        /* ========================================================================= */
+        function drawScene(type, progress) {
+            const canvas = document.getElementById(`canvas-${type}`);
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;  // 1080
+            const H = canvas.height; // 1920
+
+            ctx.clearRect(0, 0, W, H);
+
+            if (type === 'habit') {
+                renderHabitVideo(ctx, W, H, progress);
+            } else {
+                renderCommunityVideo(ctx, W, H, progress);
+            }
+        }
+
+        /* ── VIDEO 1: The Habit & Bradbury Method ── */
+        function renderHabitVideo(ctx, W, H, p) {
+            // Scene 1 (0.0 - 0.28): Break the Doomscroll Hook
+            // Scene 2 (0.28 - 0.58): The 3 Pillars (Story, Poem, Idea)
+            // Scene 3 (0.58 - 0.82): Immersive Reading Mode
+            // Scene 4 (0.82 - 1.00): Streak & Call to Action
+
+            const bgImg = document.getElementById('bg-lake');
+
+            // Draw drifting atmospheric calm background
+            if (bgImg && bgImg.complete) {
+                const zoom = 1.0 + (p * 0.08);
+                const dw = W * zoom;
+                const dh = H * zoom;
+                const dx = (W - dw) / 2;
+                const dy = (H - dh) / 2;
+                ctx.drawImage(bgImg, dx, dy, dw, dh);
+            } else {
+                ctx.fillStyle = '#0F1216';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // Dark serene vignette overlay
+            const grad = ctx.createRadialGradient(W/2, H/2, 200, W/2, H/2, 1000);
+            grad.addColorStop(0, 'rgba(12, 15, 20, 0.55)');
+            grad.addColorStop(1, 'rgba(8, 10, 14, 0.92)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Subtle border film frame
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(60, 60, W - 120, H - 120);
+
+            // Brand Header (Persistent)
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(244, 239, 235, 0.85)';
+            ctx.font = '600 28px "JetBrains Mono", monospace';
+            ctx.letterSpacing = '6px';
+            ctx.fillText('DAILYREADS.EU', W / 2, 140);
+
+            // SCENE 1: The Hook (0 - 28%)
+            if (p < 0.28) {
+                const subP = p / 0.28;
+                const alpha = subP < 0.2 ? subP / 0.2 : subP > 0.8 ? (1 - subP) / 0.2 : 1;
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+                // Badge
+                ctx.fillStyle = 'rgba(224, 122, 95, 0.2)';
+                roundRect(ctx, W/2 - 160, 480, 320, 56, 28, true, false);
+                ctx.strokeStyle = '#E07A5F';
+                ctx.lineWidth = 2;
+                roundRect(ctx, W/2 - 160, 480, 320, 56, 28, false, true);
+                ctx.fillStyle = '#E07A5F';
+                ctx.font = '600 20px "JetBrains Mono", monospace';
+                ctx.fillText('TIRED OF DOOMSCROLLING?', W/2, 515);
+
+                // Headline
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 68px "Cinzel", serif';
+                ctx.letterSpacing = '1px';
+                ctx.fillText('Your Midday Pause', W/2, 650);
+                ctx.fillText('Awaits.', W/2, 730);
+
+                ctx.fillStyle = 'rgba(244, 239, 235, 0.75)';
+                ctx.font = 'italic 36px "Newsreader", serif';
+                ctx.fillText('Swap 20 minutes of social media', W/2, 850);
+                ctx.fillText('for timeless literature.', W/2, 910);
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            // SCENE 2: The Bradbury Method Trio (28% - 58%)
+            else if (p >= 0.28 && p < 0.58) {
+                const subP = (p - 0.28) / 0.30;
+                const alpha = subP < 0.15 ? subP / 0.15 : subP > 0.85 ? (1 - subP) / 0.15 : 1;
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+                ctx.fillStyle = '#D4A373';
+                ctx.font = '600 24px "JetBrains Mono", monospace';
+                ctx.letterSpacing = '4px';
+                ctx.fillText('THE RAY BRADBURY RITUAL', W/2, 380);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 64px "Cinzel", serif';
+                ctx.fillText('Three Daily Pieces', W/2, 470);
+
+                // 3 Elegant Modern Glass Cards
+                const cards = [
+                    { type: '1 POEM', title: 'Holy Thursday', author: 'William Blake', icon: '🪶', y: 580 },
+                    { type: '1 ESSAY', title: 'The Art of the Pause', author: 'Montaigne', icon: '💡', y: 840 },
+                    { type: '1 SHORT STORY', title: 'The Sound of Thunder', author: 'Ray Bradbury', icon: '📖', y: 1100 }
+                ];
+
+                cards.forEach((c, idx) => {
+                    const cardSlide = Math.min(1, Math.max(0, (subP * 3) - idx));
+                    const offsetY = (1 - cardSlide) * 40;
+                    ctx.save();
+                    ctx.translate(0, offsetY);
+
+                    // Glass Card Body
+                    ctx.fillStyle = 'rgba(22, 27, 34, 0.75)';
+                    roundRect(ctx, 120, c.y, W - 240, 210, 24, true, false);
+                    ctx.strokeStyle = idx === 0 ? 'rgba(212, 163, 115, 0.45)' : 'rgba(255, 255, 255, 0.12)';
+                    ctx.lineWidth = 2;
+                    roundRect(ctx, 120, c.y, W - 240, 210, 24, false, true);
+
+                    // Icon / Tag
+                    ctx.fillStyle = '#D4A373';
+                    ctx.font = '700 22px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`${c.icon}  ${c.type}`, 160, c.y + 60);
+
+                    // Title
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '600 38px "Cinzel", serif';
+                    ctx.fillText(c.title, 160, c.y + 118);
+
+                    // Author
+                    ctx.fillStyle = 'rgba(244, 239, 235, 0.7)';
+                    ctx.font = 'italic 26px "Newsreader", serif';
+                    ctx.fillText(`by ${c.author}`, 160, c.y + 165);
+
+                    ctx.restore();
+                });
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            // SCENE 3: Immersive Distraction-Free Reader (58% - 82%)
+            else if (p >= 0.58 && p < 0.82) {
+                const subP = (p - 0.58) / 0.24;
+                const alpha = subP < 0.15 ? subP / 0.15 : subP > 0.85 ? (1 - subP) / 0.15 : 1;
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+                // Pure reader modal surface
+                ctx.fillStyle = 'rgba(16, 20, 24, 0.95)';
+                roundRect(ctx, 100, 320, W - 200, 1180, 28, true, false);
+                ctx.strokeStyle = 'rgba(212, 163, 115, 0.35)';
+                ctx.lineWidth = 2;
+                roundRect(ctx, 100, 320, W - 200, 1180, 28, false, true);
+
+                // Modal Top Bar
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#D4A373';
+                ctx.font = '700 20px "JetBrains Mono", monospace';
+                ctx.fillText('READING PAUSE • 6 MIN READ', 150, 400);
+
+                // Story Title
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 48px "Cinzel", serif';
+                ctx.fillText('The Sound of Thunder', 150, 480);
+
+                ctx.fillStyle = 'rgba(244, 239, 235, 0.65)';
+                ctx.font = 'italic 28px "Newsreader", serif';
+                ctx.fillText('by Ray Bradbury', 150, 530);
+
+                // Divider
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(150, 580);
+                ctx.lineTo(W - 150, 580);
+                ctx.stroke();
+
+                // Story Passage (Smooth scrolling effect)
+                const scrollOffset = subP * 80;
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(150, 620, W - 300, 780);
+                ctx.clip();
+
+                ctx.fillStyle = '#F4EFEB';
+                ctx.font = '34px/1.8 "Newsreader", serif';
+                const passage = [
+                    "The sign on the wall seemed to quaver under a film of",
+                    "sliding water. Eckels felt his eyelids blink over his stare.",
+                    "The sign burned in this moment:",
+                    "",
+                    "TIME SAFARI, INC.",
+                    "SAFARIS TO ANY YEAR IN THE PAST.",
+                    "YOU NAME THE ANIMAL. WE TAKE YOU THERE.",
+                    "",
+                    "A touch of the hand and fifty thousand years dissolved.",
+                    "A quiet hour stolen back from the noise of the modern world."
+                ];
+                passage.forEach((line, idx) => {
+                    ctx.fillText(line, 150, 680 + (idx * 55) - scrollOffset);
+                });
+                ctx.restore();
+
+                // Bottom Completed Badge
+                ctx.fillStyle = 'rgba(42, 157, 143, 0.2)';
+                roundRect(ctx, 150, 1400, W - 300, 60, 30, true, false);
+                ctx.fillStyle = '#2A9D8F';
+                ctx.textAlign = 'center';
+                ctx.font = '700 22px "JetBrains Mono", monospace';
+                ctx.fillText('✓ READING COMPLETED • STREAK RECORDED', W/2, 1438);
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            // SCENE 4: Streak & Call To Action (82% - 100%)
+            else {
+                const subP = (p - 0.82) / 0.18;
+                ctx.globalAlpha = Math.min(1, subP / 0.2);
+
+                // Celebration Halo
+                const halo = ctx.createRadialGradient(W/2, 700, 50, W/2, 700, 350);
+                halo.addColorStop(0, 'rgba(212, 163, 115, 0.28)');
+                halo.addColorStop(1, 'rgba(212, 163, 115, 0)');
+                ctx.fillStyle = halo;
+                ctx.fillRect(0, 400, W, 700);
+
+                // Streak Circle Badge
+                ctx.fillStyle = 'rgba(22, 27, 34, 0.9)';
+                ctx.beginPath();
+                ctx.arc(W/2, 680, 160, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#D4A373';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#D4A373';
+                ctx.font = '600 24px "JetBrains Mono", monospace';
+                ctx.fillText('CURRENT HABIT', W/2, 610);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 110px "Cinzel", serif';
+                ctx.fillText('DAY 62', W/2, 720);
+
+                ctx.fillStyle = 'rgba(244, 239, 235, 0.8)';
+                ctx.font = 'italic 28px "Newsreader", serif';
+                ctx.fillText('Continuous Reading Ritual', W/2, 775);
+
+                // Final CTA Button
+                ctx.fillStyle = 'linear-gradient(135deg, #D4A373, #C08A56)';
+                ctx.fillStyle = '#D4A373';
+                roundRect(ctx, 160, 1020, W - 320, 90, 45, true, false);
+
+                ctx.fillStyle = '#121417';
+                ctx.font = '700 32px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Start Today → dailyreads.eu', W/2, 1076);
+
+                ctx.fillStyle = 'rgba(244, 239, 235, 0.6)';
+                ctx.font = '400 24px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('One Poem. One Essay. One Story.', W/2, 1170);
+
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        /* ── VIDEO 2: Member Publishing & Community Stories ── */
+        function renderCommunityVideo(ctx, W, H, p) {
+            const bgImg = document.getElementById('bg-forest');
+
+            if (bgImg && bgImg.complete) {
+                const zoom = 1.0 + (p * 0.08);
+                const dw = W * zoom;
+                const dh = H * zoom;
+                const dx = (W - dw) / 2;
+                const dy = (H - dh) / 2;
+                ctx.drawImage(bgImg, dx, dy, dw, dh);
+            } else {
+                ctx.fillStyle = '#0F1216';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            const grad = ctx.createRadialGradient(W/2, H/2, 200, W/2, H/2, 1000);
+            grad.addColorStop(0, 'rgba(12, 15, 20, 0.6)');
+            grad.addColorStop(1, 'rgba(8, 10, 14, 0.94)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(60, 60, W - 120, H - 120);
+
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(244, 239, 235, 0.85)';
+            ctx.font = '600 28px "JetBrains Mono", monospace';
+            ctx.letterSpacing = '6px';
+            ctx.fillText('DAILYREADS COMMUNITY', W / 2, 140);
+
+            // SCENE 1: You are an author too (0 - 28%)
+            if (p < 0.28) {
+                const subP = p / 0.28;
+                const alpha = subP < 0.2 ? subP / 0.2 : subP > 0.8 ? (1 - subP) / 0.2 : 1;
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+                ctx.fillStyle = 'rgba(212, 163, 115, 0.18)';
+                roundRect(ctx, W/2 - 180, 480, 360, 56, 28, true, false);
+                ctx.strokeStyle = '#D4A373';
+                ctx.lineWidth = 2;
+                roundRect(ctx, W/2 - 180, 480, 360, 56, 28, false, true);
+                ctx.fillStyle = '#D4A373';
+                ctx.font = '600 20px "JetBrains Mono", monospace';
+                ctx.fillText('FOR WRITERS & POETS', W/2, 515);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 68px "Cinzel", serif';
+                ctx.fillText('Write. Publish.', W/2, 650);
+                ctx.fillText('Be Heard.', W/2, 730);
+
+                ctx.fillStyle = 'rgba(244, 239, 235, 0.75)';
+                ctx.font = 'italic 36px "Newsreader", serif';
+                ctx.fillText('Members are not just readers.', W/2, 850);
+                ctx.fillText('Share your own literature with the world.', W/2, 910);
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            // SCENE 2: The Community Feed & Upvotes (28% - 58%)
+            else if (p >= 0.28 && p < 0.58) {
+                const subP = (p - 0.28) / 0.30;
+                const alpha = subP < 0.15 ? subP / 0.15 : subP > 0.85 ? (1 - subP) / 0.15 : 1;
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+                ctx.fillStyle = '#D4A373';
+                ctx.font = '600 24px "JetBrains Mono", monospace';
+                ctx.letterSpacing = '4px';
+                ctx.fillText('COMMUNITY LEADERBOARD', W/2, 380);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 60px "Cinzel", serif';
+                ctx.fillText('Discovered by Readers', W/2, 470);
+
+                // Community cards with upvotes
+                const items = [
+                    { rank: '#1', title: 'The Solitary Lighthouse', author: 'Clara Oswald', type: 'Short Story', votes: '+24', y: 580 },
+                    { rank: '#2', title: 'Echoes of Autumn Rain', author: 'Julian Vance', type: 'Poem', votes: '+18', y: 840 },
+                    { rank: '#3', title: 'Why We Need Stillness', author: 'Marcus H.', type: 'Essay', votes: '+15', y: 1100 }
+                ];
+
+                items.forEach((item, idx) => {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(22, 27, 34, 0.8)';
+                    roundRect(ctx, 120, item.y, W - 240, 210, 24, true, false);
+                    ctx.strokeStyle = idx === 0 ? 'rgba(212, 163, 115, 0.5)' : 'rgba(255, 255, 255, 0.12)';
+                    ctx.lineWidth = 2;
+                    roundRect(ctx, 120, item.y, W - 240, 210, 24, false, true);
+
+                    // Rank
+                    ctx.fillStyle = '#D4A373';
+                    ctx.font = '700 28px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(item.rank, 160, item.y + 60);
+
+                    ctx.fillStyle = 'rgba(244, 239, 235, 0.5)';
+                    ctx.font = '500 20px "JetBrains Mono", monospace';
+                    ctx.fillText(`•  ${item.type.toUpperCase()}`, 230, item.y + 60);
+
+                    // Title
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '600 36px "Cinzel", serif';
+                    ctx.fillText(item.title, 160, item.y + 118);
+
+                    // Author
+                    ctx.fillStyle = 'rgba(244, 239, 235, 0.7)';
+                    ctx.font = 'italic 26px "Newsreader", serif';
+                    ctx.fillText(`by ${item.author}`, 160, item.y + 165);
+
+                    // Vote Pill (Prominent right side)
+                    ctx.fillStyle = 'rgba(42, 157, 143, 0.18)';
+                    roundRect(ctx, W - 310, item.y + 70, 150, 68, 34, true, false);
+                    ctx.strokeStyle = '#2A9D8F';
+                    ctx.lineWidth = 2;
+                    roundRect(ctx, W - 310, item.y + 70, 150, 68, 34, false, true);
+
+                    ctx.fillStyle = '#2A9D8F';
+                    ctx.textAlign = 'center';
+                    ctx.font = '700 26px "JetBrains Mono", monospace';
+                    ctx.fillText(`▲ ${item.votes}`, W - 235, item.y + 112);
+
+                    ctx.restore();
+                });
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            // SCENE 3: Publishing in 1-Click (58% - 82%)
+            else if (p >= 0.58 && p < 0.82) {
+                const subP = (p - 0.58) / 0.24;
+                const alpha = subP < 0.15 ? subP / 0.15 : subP > 0.85 ? (1 - subP) / 0.15 : 1;
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+                // Composer Modal
+                ctx.fillStyle = 'rgba(16, 20, 24, 0.95)';
+                roundRect(ctx, 100, 360, W - 200, 1100, 28, true, false);
+                ctx.strokeStyle = 'rgba(212, 163, 115, 0.35)';
+                ctx.lineWidth = 2;
+                roundRect(ctx, 100, 360, W - 200, 1100, 28, false, true);
+
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#D4A373';
+                ctx.font = '700 22px "JetBrains Mono", monospace';
+                ctx.fillText('AUTHOR PORTAL • PUBLISH WORK', 150, 440);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 46px "Cinzel", serif';
+                ctx.fillText('Publish Your Story', 150, 520);
+
+                // Form fields simulated
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                roundRect(ctx, 150, 580, W - 300, 70, 12, true, false);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.font = '24px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Title: A Winter in Florence', 180, 625);
+
+                // Body text area
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                roundRect(ctx, 150, 680, W - 300, 560, 18, true, false);
+                ctx.fillStyle = '#F4EFEB';
+                ctx.font = 'italic 30px/1.8 "Newsreader", serif';
+                const textLines = [
+                    "The bells of Giotto’s tower began to toll across the river.",
+                    "Cold mist was clinging to the stone bridges like silk.",
+                    "He sat at the wooden table, coffee steaming in the frost,",
+                    "knowing that this morning, words would finally come.",
+                    "",
+                    "Your words are published live to thousands of thoughtful readers."
+                ];
+                textLines.forEach((tl, i) => {
+                    ctx.fillText(tl, 180, 750 + (i * 65));
+                });
+
+                // Publish Button
+                ctx.fillStyle = '#D4A373';
+                roundRect(ctx, 150, 1310, W - 300, 80, 40, true, false);
+                ctx.fillStyle = '#121417';
+                ctx.textAlign = 'center';
+                ctx.font = '700 28px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('✓ Publish to Community', W/2, 1360);
+
+                ctx.globalAlpha = 1.0;
+            }
+
+            // SCENE 4: CTA
+            else {
+                const subP = (p - 0.82) / 0.18;
+                ctx.globalAlpha = Math.min(1, subP / 0.2);
+
+                const halo = ctx.createRadialGradient(W/2, 700, 50, W/2, 700, 350);
+                halo.addColorStop(0, 'rgba(42, 157, 143, 0.25)');
+                halo.addColorStop(1, 'rgba(42, 157, 143, 0)');
+                ctx.fillStyle = halo;
+                ctx.fillRect(0, 400, W, 700);
+
+                ctx.fillStyle = 'rgba(22, 27, 34, 0.9)';
+                ctx.beginPath();
+                ctx.arc(W/2, 680, 160, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#2A9D8F';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#2A9D8F';
+                ctx.font = '600 24px "JetBrains Mono", monospace';
+                ctx.fillText('JOIN THE COMMUNITY', W/2, 610);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 76px "Cinzel", serif';
+                ctx.fillText('WRITE &', W/2, 700);
+                ctx.fillText('INSPIRE', W/2, 770);
+
+                ctx.fillStyle = '#2A9D8F';
+                roundRect(ctx, 160, 1020, W - 320, 90, 45, true, false);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '700 32px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Publish Now → dailyreads.eu', W/2, 1076);
+
+                ctx.fillStyle = 'rgba(244, 239, 235, 0.6)';
+                ctx.font = '400 24px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Read Timeless Classics • Share Your Own Voice', W/2, 1170);
+
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+            if (stroke) ctx.stroke();
+        }
+
+        /* ========================================================================= */
+        /* EXPORT DIRECT WEBM VIDEO WITH EMBEDDED STUDIO AUDIO                        */
+        /* ========================================================================= */
+        function recordVideo(type) {
+            const canvas = document.getElementById(`canvas-${type}`);
+            const audio = document.getElementById(`audio-${type}`);
+            const recBtn = document.getElementById(`btn-record-${type}`);
+
+            recBtn.classList.add('recording');
+            recBtn.innerText = '⏺ Rendering 1080×1920...';
+
+            const stream = canvas.captureStream(60);
+
+            // Connect audio stream if available
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioCtx.createMediaElementSource(audio);
+                const dest = audioCtx.createMediaStreamDestination();
+                source.connect(dest);
+                source.connect(audioCtx.destination);
+                dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+            } catch (e) {
+                console.warn('Audio context already hooked or CORS:', e);
+            }
+
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp9,opus',
+                videoBitsPerSecond: 8000000
+            });
+
+            const recordedChunks = [];
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                recBtn.classList.remove('recording');
+                recBtn.innerText = '⏺ Export WebM Video';
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `dailyreads_${type}_promo_1080x1920.webm`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+            };
+
+            audio.currentTime = 0;
+            mediaRecorder.start();
+            audio.play();
+            states[type].isPlaying = true;
+            renderLoop(type);
+
+            setTimeout(() => {
+                if (mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }, (audio.duration || DURATION) * 1000 + 200);
+        }
+
+        // Initial preview render on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                drawScene('habit', 0.15);
+                drawScene('community', 0.15);
+            }, 300);
+        });
+    </script>
+</body>
+</html>

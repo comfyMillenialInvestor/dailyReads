@@ -106,15 +106,22 @@ export function CommunityVoteButtons({
     const isSm = size === 'sm';
     const isLg = size === 'lg';
 
-    const iconSizeClass = isSm ? 'h-4 w-4' : isLg ? 'h-6 w-6' : 'h-5 w-5';
-    const btnPaddingClass = isSm ? 'p-1' : isLg ? 'p-2' : 'p-1.5';
-    const textClass = isSm ? 'text-xs' : isLg ? 'text-base font-bold' : 'text-sm font-semibold';
-
+    // Better touch targets & proportions on mobile:
+    // When size is 'sm', keep it ultra-compact horizontally on mobile (h-6.5, px-1.5) so it never overflows headers or wraps awkwardly.
     return (
         <div
             className={cn(
-                "inline-flex items-center rounded-full bg-muted/40 border border-border/50 p-0.5 select-none transition-colors",
-                orientation === 'vertical' ? "flex-col gap-0.5" : "flex-row gap-1",
+                "inline-flex items-center select-none transition-all duration-200",
+                "bg-muted/40 hover:bg-muted/60 dark:bg-muted/30 dark:hover:bg-muted/50 border border-border/60",
+                "backdrop-blur-xs shadow-xs",
+                orientation === 'vertical' 
+                    ? "flex-col rounded-2xl p-1 gap-1" 
+                    : "flex-row rounded-full",
+                isSm 
+                    ? "h-7 px-1 gap-0.5 text-xs" 
+                    : isLg 
+                    ? "h-10 px-2.5 gap-2 text-base" 
+                    : "h-8 px-1.5 gap-1 text-sm",
                 className
             )}
             onClick={(e) => e.stopPropagation()}
@@ -124,20 +131,20 @@ export function CommunityVoteButtons({
                 type="button"
                 onClick={(e) => handleVote(1, e)}
                 disabled={loading}
-                title="Gefällt mir (Upvote)"
+                title="Upvote"
                 className={cn(
-                    "rounded-full transition-all flex items-center justify-center hover:bg-emerald-500/10 active:scale-95",
-                    btnPaddingClass,
+                    "rounded-full transition-all flex items-center justify-center shrink-0 active:scale-90",
+                    isSm ? "h-5 w-5" : isLg ? "h-7 w-7" : "h-6 w-6",
                     userVote === 1
-                        ? "text-emerald-500 bg-emerald-500/15 font-bold shadow-sm"
-                        : "text-muted-foreground hover:text-emerald-500"
+                        ? "text-emerald-500 bg-emerald-500/20 font-bold shadow-xs scale-105"
+                        : "text-muted-foreground/75 hover:text-emerald-500 hover:bg-emerald-500/10"
                 )}
                 aria-label="Upvote"
             >
                 <ArrowBigUp
                     className={cn(
-                        iconSizeClass,
-                        "transition-transform",
+                        isSm ? "h-3.5 w-3.5" : isLg ? "h-5 w-5" : "h-4 w-4",
+                        "transition-transform duration-150 stroke-[2.2]",
                         userVote === 1 && "fill-current scale-110"
                     )}
                 />
@@ -146,11 +153,11 @@ export function CommunityVoteButtons({
             {/* Score Display */}
             <span
                 className={cn(
-                    "px-1 font-mono transition-colors min-w-[2ch] text-center",
-                    textClass,
+                    "font-mono transition-colors text-center shrink-0 tabular-nums px-0.5 select-none leading-none",
+                    isSm ? "text-[11px] min-w-[1.6ch] font-semibold" : isLg ? "text-sm min-w-[2.2ch] font-bold" : "text-xs min-w-[1.8ch] font-semibold",
                     score > 0 && "text-emerald-500 dark:text-emerald-400 font-bold",
                     score < 0 && "text-rose-500 dark:text-rose-400 font-bold",
-                    score === 0 && "text-muted-foreground"
+                    score === 0 && "text-muted-foreground/80 font-medium"
                 )}
             >
                 {score > 0 ? `+${score}` : score}
@@ -161,20 +168,20 @@ export function CommunityVoteButtons({
                 type="button"
                 onClick={(e) => handleVote(-1, e)}
                 disabled={loading}
-                title="Gefällt mir nicht (Downvote)"
+                title="Downvote"
                 className={cn(
-                    "rounded-full transition-all flex items-center justify-center hover:bg-rose-500/10 active:scale-95",
-                    btnPaddingClass,
+                    "rounded-full transition-all flex items-center justify-center shrink-0 active:scale-90",
+                    isSm ? "h-5 w-5" : isLg ? "h-7 w-7" : "h-6 w-6",
                     userVote === -1
-                        ? "text-rose-500 bg-rose-500/15 font-bold shadow-sm"
-                        : "text-muted-foreground hover:text-rose-500"
+                        ? "text-rose-500 bg-rose-500/20 font-bold shadow-xs scale-105"
+                        : "text-muted-foreground/75 hover:text-rose-500 hover:bg-rose-500/10"
                 )}
                 aria-label="Downvote"
             >
                 <ArrowBigDown
                     className={cn(
-                        iconSizeClass,
-                        "transition-transform",
+                        isSm ? "h-3.5 w-3.5" : isLg ? "h-5 w-5" : "h-4 w-4",
+                        "transition-transform duration-150 stroke-[2.2]",
                         userVote === -1 && "fill-current scale-110"
                     )}
                 />

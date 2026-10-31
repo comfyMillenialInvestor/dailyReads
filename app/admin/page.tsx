@@ -32,15 +32,17 @@ import {
     Layers,
     Feather,
     RefreshCw,
-    Instagram
+    Instagram,
+    Film
 } from 'lucide-react';
 import InstagramQuoteCard from '@/components/InstagramQuoteCard';
+import PromoVideoStudio from '@/components/PromoVideoStudio';
 
 export default function AdminPage() {
     const { data: session } = useSession();
     const streakDays = (session?.user as any)?.streakDays || 42;
 
-    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'standalone' | 'instagram'>('daily');
+    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'standalone' | 'instagram' | 'video'>('daily');
 
     // ── 1. DAILY PART STATE ──
     const [challengeDay, setChallengeDay] = useState<number>(streakDays);
@@ -304,6 +306,17 @@ export default function AdminPage() {
                 >
                     <Instagram className="h-3.5 w-3.5" />
                     <span>Instagram Image & Caption</span>
+                </Button>
+                <Button
+                    variant={activeTab === 'video' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveTab('video')}
+                    className={`flex items-center gap-2 text-xs rounded-lg flex-1 sm:flex-initial ${
+                        activeTab === 'video' ? 'bg-gradient-to-r from-sky-600 to-amber-600 text-white' : 'text-amber-500 hover:text-amber-600'
+                    }`}
+                >
+                    <Film className="h-3.5 w-3.5" />
+                    <span>Cinema Promo Video Generator</span>
                 </Button>
             </div>
 
@@ -833,6 +846,23 @@ export default function AdminPage() {
                             </CardFooter>
                         </Card>
                     </div>
+                </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* ── TAB: CINEMA PROMO VIDEO GENERATOR ── */}
+            {/* ======================================================== */}
+            {activeTab === 'video' && (
+                <div className="space-y-6">
+                    <PromoVideoStudio
+                        defaultDay={challengeDay}
+                        initialStoryTitle={dailyTexts.find(t => t.type === 'short_story')?.title || 'The Sound of Thunder'}
+                        initialStoryAuthor={dailyTexts.find(t => t.type === 'short_story')?.author || 'Ray Bradbury'}
+                        initialPoemTitle={dailyTexts.find(t => t.type === 'poem')?.title || 'Holy Thursday'}
+                        initialPoemAuthor={dailyTexts.find(t => t.type === 'poem')?.author || 'William Blake'}
+                        initialEssayTitle={dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.title || 'The Art of the Pause'}
+                        initialEssayAuthor={dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.author || 'Michel de Montaigne'}
+                    />
                 </div>
             )}
         </div>

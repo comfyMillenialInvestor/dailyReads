@@ -97,9 +97,9 @@ export function TextReaderModal({ item, onClose }: TextReaderModalProps) {
 
                 {/* Control Panel */}
                 <div className="flex items-center gap-1.5 md:gap-4 shrink-0">
-                    {/* Story Voting */}
+                    {/* Story Voting (visible in top header on sm+ screens) */}
                     {Boolean(item?._id) && (
-                        <div className="flex items-center mr-1">
+                        <div className="hidden sm:flex items-center mr-1">
                             <CommunityVoteButtons
                                 contentId={item._id.toString()}
                                 initialScore={(item as any).score || 0}
@@ -249,9 +249,26 @@ export function TextReaderModal({ item, onClose }: TextReaderModalProps) {
                 </div>
 
                 {/* Reader mode footer */}
-                <div className="mt-12 md:mt-16 text-center">
+                <div className="mt-12 md:mt-16 text-center space-y-4">
                     <div className="h-[1px] w-full bg-muted-foreground/20 my-6 md:my-8" />
-                    <p className="text-sm opacity-60 italic font-serif mb-6">
+                    
+                    {/* Voting pill at completion of reading */}
+                    {Boolean(item?._id) && (
+                        <div className="flex flex-col items-center justify-center gap-2 pb-2">
+                            <span className="text-xs text-muted-foreground font-serif italic">
+                                How did this piece resonate with you?
+                            </span>
+                            <CommunityVoteButtons
+                                contentId={item._id.toString()}
+                                initialScore={(item as any).score || 0}
+                                initialUpvotes={(item as any).upvotes || 0}
+                                initialDownvotes={(item as any).downvotes || 0}
+                                size="md"
+                            />
+                        </div>
+                    )}
+
+                    <p className="text-sm opacity-60 italic font-serif">
                         {t('carousel.readerQuote')}
                     </p>
                     <Button

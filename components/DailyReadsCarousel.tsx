@@ -278,25 +278,28 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                 <Card className="h-[calc(100vh-280px)] min-h-[400px] max-h-[600px] md:min-h-[460px] md:h-[600px] flex flex-col bg-card border-border shadow-lg">
                                     <CardHeader className="pb-2.5 md:pb-3 px-3.5 md:px-6 pt-3.5 md:pt-6">
                                         {/* Top row: Badges on left, stats + expand on right */}
-                                        <div className="flex items-center justify-between gap-2 mb-2 w-full">
+                                        <div className="flex items-center justify-between gap-1.5 md:gap-2 mb-2 w-full">
                                             <div className="flex flex-wrap items-center gap-1.5 md:gap-2 min-w-0">
                                                 <span className="bg-primary/10 text-primary px-2 md:px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block shrink-0">
                                                     {getTypeLabel(item.type)}
                                                 </span>
-                                                <span className="capitalize text-[10px] px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium truncate max-w-[120px]">
+                                                <span className="capitalize text-[10px] px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium truncate max-w-[100px] sm:max-w-[140px]">
                                                     {item.theme}
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center gap-2 shrink-0">
+                                            <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+                                                {/* On desktop/tablet, show voting in top row; on mobile, it's elegantly housed in the footer */}
                                                 {Boolean(item._id) && (
-                                                    <CommunityVoteButtons
-                                                        contentId={item._id.toString()}
-                                                        initialScore={(item as any).score || 0}
-                                                        initialUpvotes={(item as any).upvotes || 0}
-                                                        initialDownvotes={(item as any).downvotes || 0}
-                                                        size="sm"
-                                                    />
+                                                    <div className="hidden sm:flex items-center">
+                                                        <CommunityVoteButtons
+                                                            contentId={item._id.toString()}
+                                                            initialScore={(item as any).score || 0}
+                                                            initialUpvotes={(item as any).upvotes || 0}
+                                                            initialDownvotes={(item as any).downvotes || 0}
+                                                            size="sm"
+                                                        />
+                                                    </div>
                                                 )}
                                                 <div className="text-right text-[10px] md:text-xs text-muted-foreground/80 leading-tight">
                                                     {item.readTime && <span>{item.readTime}</span>}
@@ -306,7 +309,7 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    className="flex items-center gap-1.5 text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200 h-7 md:h-8 px-2.5 md:px-3 shrink-0 shadow-sm"
+                                                    className="flex items-center gap-1 text-[11px] md:text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-200 h-6.5 md:h-8 px-2 md:px-3 shrink-0 shadow-sm"
                                                     onClick={() => {
                                                         setReaderItem(item);
                                                         setScrollProgress(0);
@@ -359,13 +362,27 @@ export function DailyReadsCarousel({ theme, refreshKey, onRefreshRandom }: Daily
                                         </div>
                                     </CardContent>
 
-                                    <CardFooter className="flex flex-col border-t pt-3 md:pt-4 px-3 md:px-6 pb-3 md:pb-4 text-xs text-muted-foreground text-center space-y-2 md:space-y-3">
-                                        <div className="flex items-center justify-between w-full">
-                                            <span className="font-medium">
-                                                {index + 1} {t('carousel.of')} {items.length}
-                                            </span>
+                                    <CardFooter className="flex flex-col border-t pt-2.5 md:pt-4 px-3 md:px-6 pb-2.5 md:pb-4 text-xs text-muted-foreground text-center space-y-2 md:space-y-3">
+                                        <div className="flex items-center justify-between w-full gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-[11px] sm:text-xs">
+                                                    {index + 1} {t('carousel.of')} {items.length}
+                                                </span>
+                                                {/* Mobile-only voting pill: neatly placed next to item index */}
+                                                {Boolean(item._id) && (
+                                                    <div className="sm:hidden flex items-center">
+                                                        <CommunityVoteButtons
+                                                            contentId={item._id.toString()}
+                                                            initialScore={(item as any).score || 0}
+                                                            initialUpvotes={(item as any).upvotes || 0}
+                                                            initialDownvotes={(item as any).downvotes || 0}
+                                                            size="sm"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                             {index < items.length - 1 ? (
-                                                <span className="animate-pulse">{t('carousel.next')}: {getTypeLabel(items[index + 1].type)} &rarr;</span>
+                                                <span className="animate-pulse text-[11px] sm:text-xs">{t('carousel.next')}: {getTypeLabel(items[index + 1].type)} &rarr;</span>
                                             ) : (
                                                 <div className="flex flex-col items-end gap-2">
                                                     {isPaid ? (
