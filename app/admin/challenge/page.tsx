@@ -11,9 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import {
     Loader2, Send, Wand2, Check, X, Maximize2, Minimize2,
     Twitter, Quote, Sparkles, Copy, BookOpen, ExternalLink,
-    CheckCircle2, Flame, Globe
+    CheckCircle2, Flame, Globe, Instagram
 } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import InstagramQuoteCard from '@/components/InstagramQuoteCard';
 
 export default function ChallengeAdmin() {
     const { data: session } = useSession();
@@ -1084,6 +1085,28 @@ Tomorrow we start week ${nextWeek}.
                                                     </div>
                                                 );
                                             })}
+                                        </div>
+
+                                        {/* Pre-formatted Instagram Quote Generator */}
+                                        <div className="pt-4 border-t border-border/40">
+                                            <InstagramQuoteCard
+                                                dayNumber={day || currentStreak}
+                                                quote={
+                                                    (selectedQuoteIdx !== null && quoteOptions[selectedQuoteIdx]?.quote) ||
+                                                    quoteOptions[0]?.quote ||
+                                                    "Between the pages of a book is a lovely place to be."
+                                                }
+                                                author={
+                                                    (selectedQuoteIdx !== null && quoteOptions[selectedQuoteIdx]?.author) ||
+                                                    quoteOptions[0]?.author ||
+                                                    "Classic Author"
+                                                }
+                                                sourceTitle={
+                                                    (selectedQuoteIdx !== null && quoteOptions[selectedQuoteIdx]?.title) ||
+                                                    quoteOptions[0]?.title
+                                                }
+                                                readings={texts}
+                                            />
                                         </div>
                                     </div>
                                 )}

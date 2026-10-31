@@ -31,14 +31,16 @@ import {
     CheckCircle2,
     Layers,
     Feather,
-    RefreshCw
+    RefreshCw,
+    Instagram
 } from 'lucide-react';
+import InstagramQuoteCard from '@/components/InstagramQuoteCard';
 
 export default function AdminPage() {
     const { data: session } = useSession();
     const streakDays = (session?.user as any)?.streakDays || 42;
 
-    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'standalone'>('daily');
+    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'standalone' | 'instagram'>('daily');
 
     // ── 1. DAILY PART STATE ──
     const [challengeDay, setChallengeDay] = useState<number>(streakDays);
@@ -99,7 +101,7 @@ export default function AdminPage() {
                     formatDefaultDailyPost(dayNum, todayData.items, dailyPattern);
                 } else {
                     setDailyTexts([]);
-                    setDailyPostText(`Day ${dayNum} of 70 — Bradbury Reading Method.\n\nThree curated short pieces for today's midday pause.\n\nRead live at dailyreads.io/day/${dayNum}`);
+                    setDailyPostText(`Day ${dayNum}\n\nThree pieces waiting for today's pause → dailyreads.eu/today`);
                 }
             }
         } catch (e: any) {
@@ -114,18 +116,19 @@ export default function AdminPage() {
         const poem = texts.find(t => t.type === 'poem');
         const idea = texts.find(t => t.type === 'idea' || t.type === 'quote');
 
-        let closing = "Read during the midday pause.";
-        if (pattern === 'atmospheric') closing = "Rain on the glass; coffee growing cold.";
-        if (pattern === 'resonance') closing = "Three quiet signals across three different eras.";
+        // Create reflective opening lead from the poem or story
+        const leadPiece = poem || story || texts[0];
+        const leadLine = leadPiece && leadPiece.title ? `“${leadPiece.title}” by ${leadPiece.author} — a quiet reflection to slow down.` : '';
 
         const lines = [
-            `Day ${day} of 70 — Bradbury Method:`,
+            leadLine,
+            `Day ${day}`,
+            '',
             story ? `• Story: "${story.title}" (${story.author})` : '',
             poem ? `• Poem: "${poem.title}" (${poem.author})` : '',
             idea ? `• Idea: ${idea.author}` : '',
             '',
-            `${closing}`,
-            `dailyreads.io/day/${day}`
+            `Three pieces waiting for today's pause → dailyreads.eu/today`
         ].filter(Boolean);
 
         setDailyPostText(lines.join('\n'));
@@ -291,6 +294,17 @@ export default function AdminPage() {
                     <Quote className="h-3.5 w-3.5" />
                     <span>Standalone Quote / Poem</span>
                 </Button>
+                <Button
+                    variant={activeTab === 'instagram' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveTab('instagram')}
+                    className={`flex items-center gap-2 text-xs rounded-lg flex-1 sm:flex-initial ${
+                        activeTab === 'instagram' ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white' : 'text-rose-500 hover:text-rose-600'
+                    }`}
+                >
+                    <Instagram className="h-3.5 w-3.5" />
+                    <span>Instagram Image & Caption</span>
+                </Button>
             </div>
 
             {/* ======================================================== */}
@@ -453,6 +467,58 @@ export default function AdminPage() {
                             </CardFooter>
                         </Card>
                     </div>
+
+                    {/* Instagram Section directly below Daily X Post */}
+                    <div className="lg:col-span-12 pt-4">
+                        <InstagramQuoteCard
+                            dayNumber={challengeDay}
+                            quote={
+                                dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.content_en ||
+                                dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.content ||
+                                dailyTexts[0]?.content_en?.slice(0, 160) ||
+                                "A reader lives a thousand lives before he dies. The man who never reads lives only one."
+                            }
+                            author={
+                                dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.author ||
+                                dailyTexts[0]?.author ||
+                                "Ray Bradbury"
+                            }
+                            sourceTitle={
+                                dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.title ||
+                                dailyTexts[0]?.title
+                            }
+                            readings={dailyTexts}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* ── TAB: DEDICATED INSTAGRAM EXPORT ── */}
+            {/* ======================================================== */}
+            {activeTab === 'instagram' && (
+                <div className="space-y-6">
+                    <InstagramQuoteCard
+                        dayNumber={challengeDay}
+                        quote={
+                            dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.content_en ||
+                            dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.content ||
+                            standaloneItem?.content_en ||
+                            standaloneItem?.content ||
+                            "Between the pages of a book is a lovely place to be."
+                        }
+                        author={
+                            dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.author ||
+                            standaloneItem?.author ||
+                            "Classic Literature"
+                        }
+                        sourceTitle={
+                            dailyTexts.find(t => t.type === 'idea' || t.type === 'quote')?.title ||
+                            standaloneItem?.title ||
+                            "Midday Reading Pause"
+                        }
+                        readings={dailyTexts}
+                    />
                 </div>
             )}
 
